@@ -113,7 +113,9 @@ function handleDrawOperationEvent() {
   } else if (selectedOption == 'ang') {
     let angle = angleBetween(v1, v2);
     console.log('Angle: ', angle);
-
+  } else if (selectedOption == 'are') {
+    let area = areaTriangle(v1, v2);
+    console.log('Area of the triangle:', area);
   }
   // draw line
   drawVector(v1, 'red');
@@ -127,4 +129,11 @@ function angleBetween(v1, v2) {
   let theta = Math.acos(Vector3.dot(v1, v2) / (v1.magnitude() * v2.magnitude()));
   let angle = theta * 180 / Math.PI;
   return angle;
+}
+
+/** compute the area of triangle */
+function areaTriangle(v1, v2) {
+  let crossProduct = Vector3.cross(v1, v2);
+  let area = (crossProduct.magnitude()) / 2;
+  return area;
 }

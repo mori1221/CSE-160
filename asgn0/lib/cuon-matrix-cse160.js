@@ -48,6 +48,7 @@ class Vector3 {
         // This function should change this vector (this.elements) and not create a new vector.
         this.elements[0] = v1.elements[0] + v2.elements[0];
         this.elements[1] = v1.elements[1] + v2.elements[1];
+        this.elements[2] = v1.elements[2] + v2.elements[2];
         // Don't delete the return statement.
         return this;
     };
@@ -61,6 +62,7 @@ class Vector3 {
         // This function should change this vector (this.elements) and not create a new vector.
         this.elements[0] = v1.elements[0] - v2.elements[0];
         this.elements[1] = v1.elements[1] - v2.elements[1];
+        this.elements[2] = v1.elements[2] - v2.elements[2];
         // Don't delete the return statement.
         return this;
     };
@@ -74,6 +76,7 @@ class Vector3 {
         // This function should change this vector (this.elements) and not create a new vector.
         this.elements[0] = v.elements[0] / s;
         this.elements[1] = v.elements[1] / s;
+        this.elements[2] = v.elements[2] / s;
         // Don't delete the return statement.
         return this;
     };
@@ -87,6 +90,7 @@ class Vector3 {
         // This function should change this vector (this.elements) and not create a new vector.
         this.elements[0] = v.elements[0] * s;
         this.elements[1] = v.elements[1] * s;
+        this.elements[2] = v.elements[2] * s;
         // Don't delete the return statement.
         return this;
     };
@@ -114,7 +118,10 @@ class Vector3 {
         // Insert your code here.
         // This function should create and return a new vector.
         let v3 = new Vector3(); // Modify this line to calculate cross product between other1 and other2.
-
+        //(Vy1Vz2 – Vy2Vz1)I + (Vz1Vx2 – Vz2Vx1)j + (Vx1Vy2 – Vx2Vy1
+        let x1 = other1.elements[0], y1 = other1.elements[1], z1 = other1.elements[2];
+        let x2 = other2.elements[0], y2 = other2.elements[1], z2 = other2.elements[2];
+        v3.set(new Vector3([y1 * z2 - z1 * y2, z1 * x2 - x1 * z2, x1 * y2 - y1 * x2]));
         // Don't delete the return statement.
         return v3;
     }
@@ -126,7 +133,7 @@ class Vector3 {
     magnitude() {
         // Insert your code here.
         let m = 0; // Modify this line to calculate this vector's magnitude.
-        m = Math.sqrt(this.elements[0]**2 + this.elements[1]**2);
+        m = Math.sqrt(this.elements[0]**2 + this.elements[1]**2 + this.elements[2]**2);
         // Don't delete the return statement.
         return m;
     };
@@ -142,6 +149,7 @@ class Vector3 {
         if (m != 0) {
           this.elements[0] /= m;
           this.elements[1] /= m;
+          this.elements[2] /= m;
         }
 
         // Don't delete the return statement.
