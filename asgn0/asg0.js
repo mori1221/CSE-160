@@ -23,7 +23,6 @@ function main() {
 
   // Initialize vectors
   v1 = new Vector3([2.25, 2.25, 0]);
-  v2 = new Vector3([2.25, 2.25, 0]);
 
   // Call drawing functions
   drawVector(v1, 'red');
@@ -45,15 +44,18 @@ function drawVector(v, color) {
 
 /** drawing function  */
 function handleDrawEvent() {
-  let v1 = document.getElementById("vx").value;
-  console.log(v1);
+  // clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // refaw canvas
+  ctx.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set color to blue
+  ctx.fillRect(0, 0, canvas.width, canvas.height);  
+  // read x and y for v1
+  let v1x = document.getElementById("vx").value;
+  let v1y = document.getElementById("vy").value;
+  console.log(v1x, v1y);
+  // create vector
+  newVector = new Vector3([v1x, v1y, 0]);
+  // draw line
+  drawVector(newVector, 'red');
 
-  ctx.strokeStyle = 'red';
-
-  let cx = canvas.width/2;
-  let cy = canvas.height/2;
-  ctx.beginPath();
-  ctx.moveTo(cx, cy);
-  ctx.lineTo(cx + 75, cy + 50);
-  ctx.stroke();
 }
