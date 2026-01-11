@@ -100,10 +100,31 @@ function handleDrawOperationEvent() {
   } else if (selectedOption == 'div') {
     v3.div(v1, scale);
     v4.div(v2, scale);
+  } else if (selectedOption == 'mag') {
+    let v1m = v1.magnitude();
+    console.log('Magnitude v1: ', v1m);
+    let v2m = v2.magnitude();
+    console.log('Magnitude v2: ', v2m);
+  } else if (selectedOption == 'nor') {
+    v3.set(v1);
+    v4.set(v2);
+    v3.normalize();
+    v4.normalize();
+  } else if (selectedOption == 'ang') {
+    let angle = angleBetween(v1, v2);
+    console.log('Angle: ', angle);
+
   }
   // draw line
   drawVector(v1, 'red');
   drawVector(v2, 'blue');
   drawVector(v3, 'green');
   drawVector(v4, 'green');
+}
+
+/** compute the angle between v1 and v2 */
+function angleBetween(v1, v2) {
+  let theta = Math.acos(Vector3.dot(v1, v2) / (v1.magnitude() * v2.magnitude()));
+  let angle = theta * 180 / Math.PI;
+  return angle;
 }
