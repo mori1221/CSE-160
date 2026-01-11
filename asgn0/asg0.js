@@ -91,15 +91,21 @@ function handleDrawOperationEvent() {
   v4 = new Vector3([0, 0, 0]);
   // operation 
   if (selectedOption == 'add') {
-    v3.add(v1, v2);
+    v3.add(v1);
+    v3.add(v2);
   } else if (selectedOption == 'sub') {
-    v3.sub(v1, v2);
+    v3.set(v1);
+    v3.sub(v2);
   } else if (selectedOption == 'mul') {
-    v3.mul(v1, scale);
-    v4.mul(v2, scale);
+    v3.set(v1);
+    v4.set(v2);
+    v3.mul(scale);
+    v4.mul(scale);
   } else if (selectedOption == 'div') {
-    v3.div(v1, scale);
-    v4.div(v2, scale);
+    v3.set(v1);
+    v4.set(v2);
+    v3.div(scale);
+    v4.div(scale);
   } else if (selectedOption == 'mag') {
     let v1m = v1.magnitude();
     console.log('Magnitude v1: ', v1m);

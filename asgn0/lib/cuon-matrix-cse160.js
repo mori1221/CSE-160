@@ -43,12 +43,12 @@ class Vector3 {
       * Add other to this vector.
       * @return this
       */
-    add(v1, v2) {
+    add(v1) {
         // Insert your code here.
         // This function should change this vector (this.elements) and not create a new vector.
-        this.elements[0] = v1.elements[0] + v2.elements[0];
-        this.elements[1] = v1.elements[1] + v2.elements[1];
-        this.elements[2] = v1.elements[2] + v2.elements[2];
+        this.elements[0] += v1.elements[0];
+        this.elements[1] += v1.elements[1];
+        this.elements[2] += v1.elements[2];
         // Don't delete the return statement.
         return this;
     };
@@ -57,12 +57,12 @@ class Vector3 {
       * Subtract other from this vector.
       * @return this
       */
-    sub(v1, v2) {
+    sub(v1) {
         // Insert your code here.
         // This function should change this vector (this.elements) and not create a new vector.
-        this.elements[0] = v1.elements[0] - v2.elements[0];
-        this.elements[1] = v1.elements[1] - v2.elements[1];
-        this.elements[2] = v1.elements[2] - v2.elements[2];
+        this.elements[0] -= v1.elements[0];
+        this.elements[1] -= v1.elements[1];
+        this.elements[2] -= v1.elements[2];
         // Don't delete the return statement.
         return this;
     };
@@ -71,12 +71,12 @@ class Vector3 {
       * Divide this vector by a scalar.
       * @return this
       */
-    div(v, s) {
+    div(scalar) {
         // Insert your code here.
         // This function should change this vector (this.elements) and not create a new vector.
-        this.elements[0] = v.elements[0] / s;
-        this.elements[1] = v.elements[1] / s;
-        this.elements[2] = v.elements[2] / s;
+        this.elements[0] /= scalar;
+        this.elements[1] /= scalar;
+        this.elements[2] /= scalar;
         // Don't delete the return statement.
         return this;
     };
@@ -85,12 +85,12 @@ class Vector3 {
       * Multiply this vector by a scalar.
       * @return this
       */
-    mul(v, s) {
+    mul(scalar) {
         // Insert your code here.
         // This function should change this vector (this.elements) and not create a new vector.
-        this.elements[0] = v.elements[0] * s;
-        this.elements[1] = v.elements[1] * s;
-        this.elements[2] = v.elements[2] * s;
+        this.elements[0] *= scalar;
+        this.elements[1] *= scalar;
+        this.elements[2] *= scalar;
         // Don't delete the return statement.
         return this;
     };
