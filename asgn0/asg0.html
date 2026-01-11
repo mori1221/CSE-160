@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Draw a black rectangle (canvas version)</title>
+  </head>
+  <body onload="main()">
+    <canvas id="asg0" width="400" height="400">
+      Please use a browser that supports "canvas"
+    </canvas>
+    <script src="asg0.js"></script>
+    <script src="lib/cuon-matrix-cse160.js"></script>
+    <br></br>
+    <!-- Vector 1 -->
+    <div class="vector-1">
+      <label for="v1x">v1: x</label>
+      <input type="text" id="vx" name="vx" required
+        minlength="4" maxlength="8" size="10" />
+      <label for="v1y">y</label>
+      <input type="text" id="vy" name="vy" required
+        minlength="4" maxlength="8" size="10" />
+    </div>
+    <!-- Vector 2 -->
+    <div class="vector-2">
+      <label for="v2x">v2: x</label>
+      <input type="text" id="v2x" name="v2x" required
+        minlength="4" maxlength="8" size="10" />
+      <label for="v2y">y</label>
+      <input type="text" id="v2y" name="v2y" required
+        minlength="4" maxlength="8" size="10" />
+    </div>
+    <br></br>
+    <input type="button" value="Draw" onclick="handleDrawEvent()"/>
+    <br></br>
+    <!-- Button Pannel  -->
+    <label for="select">Operation:</label>
+    <select name="select" id="select">
+      <option value="">--Please choose an option--</option>
+      <option value="add">Add</option>
+      <option value="sub">Subtract</option>
+      <option value="mul">Multiply</option>
+      <option value="div">Divide</option>
+      <option value="ang">Angle Between</option>
+      <option value="mag">Magnitude</option>
+      <option value="nor">Normalize</option>
+    </select> 
+    <label for="sca">Scalar</label>
+    <input type="text" id="sca" name="sca" required
+      minlength="4" maxlength="8" size="10" />
+    <br></br>
+    <input type="button" value="Draw" onclick="handleDrawEvent()"/>
+  </body>
+</html>
