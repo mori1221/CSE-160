@@ -52,10 +52,15 @@ function handleDrawEvent() {
   // read x and y for v1
   let v1x = document.getElementById("vx").value;
   let v1y = document.getElementById("vy").value;
-  console.log(v1x, v1y);
-  // create vector
-  newVector = new Vector3([v1x, v1y, 0]);
+  // read x and y for v2
+  let v2x = document.getElementById("v2x").value;
+  let v2y = document.getElementById("v2y").value;
+  console.log('v1', v1x, v1y);
+  console.log('v2', v2x, v2y);
+  // create vectors
+  newVector1 = new Vector3([v1x, v1y, 0]);
+  newVector2 = new Vector3([v2x, v2y, 0]);
   // draw line
-  drawVector(newVector, 'red');
-
+  drawVector(newVector1, 'red');
+  drawVector(newVector2, 'blue');
 }
