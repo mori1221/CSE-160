@@ -46,7 +46,7 @@ function drawVector(v, color) {
 function handleDrawEvent() {
   // clear canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // refaw canvas
+  // redraw canvas
   ctx.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set color to blue
   ctx.fillRect(0, 0, canvas.width, canvas.height);  
   // read x and y for v1
@@ -55,12 +55,55 @@ function handleDrawEvent() {
   // read x and y for v2
   let v2x = document.getElementById("v2x").value;
   let v2y = document.getElementById("v2y").value;
-  console.log('v1', v1x, v1y);
-  console.log('v2', v2x, v2y);
+  console.log('v1:', v1x, v1y);
+  console.log('v2:', v2x, v2y);
   // create vectors
   newVector1 = new Vector3([v1x, v1y, 0]);
   newVector2 = new Vector3([v2x, v2y, 0]);
   // draw line
   drawVector(newVector1, 'red');
   drawVector(newVector2, 'blue');
+}
+/** handle operations */
+function handleDrawOperationEvent() {
+  // clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // redraw canvas
+  ctx.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set color to blue
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // read x and y for v1
+  let v1x = document.getElementById("vx").value;
+  let v1y = document.getElementById("vy").value;
+  // read x and y for v2
+  let v2x = document.getElementById("v2x").value;
+  let v2y = document.getElementById("v2y").value;
+  console.log('v1:', v1x, v1y);
+  console.log('v2:', v2x, v2y);
+  // read select options + read scale
+  let selectedOption = document.getElementById('select').value;
+  let scale = document.getElementById('sca').value;
+  console.log('Operation:', selectedOption);
+  console.log('Scale:', scale);
+  // create vectors
+  v1 = new Vector3([v1x, v1y, 0]);
+  v2 = new Vector3([v2x, v2y, 0]);
+  v3 = new Vector3([0, 0, 0]);
+  v4 = new Vector3([0, 0, 0]);
+  // operation 
+  if (selectedOption == 'add') {
+    v3.add(v1, v2);
+  } else if (selectedOption == 'sub') {
+    v3.sub(v1, v2);
+  } else if (selectedOption == 'mul') {
+    v3.mul(v1, scale);
+    v4.mul(v2, scale);
+  } else if (selectedOption == 'div') {
+    v3.div(v1, scale);
+    v4.div(v2, scale);
+  }
+  // draw line
+  drawVector(v1, 'red');
+  drawVector(v2, 'blue');
+  drawVector(v3, 'green');
+  drawVector(v4, 'green');
 }

@@ -43,10 +43,11 @@ class Vector3 {
       * Add other to this vector.
       * @return this
       */
-    add(other) {
+    add(v1, v2) {
         // Insert your code here.
         // This function should change this vector (this.elements) and not create a new vector.
-
+        this.elements[0] = v1.elements[0] + v2.elements[0];
+        this.elements[1] = v1.elements[1] + v2.elements[1];
         // Don't delete the return statement.
         return this;
     };
@@ -55,10 +56,11 @@ class Vector3 {
       * Subtract other from this vector.
       * @return this
       */
-    sub(other) {
+    sub(v1, v2) {
         // Insert your code here.
         // This function should change this vector (this.elements) and not create a new vector.
-
+        this.elements[0] = v1.elements[0] - v2.elements[0];
+        this.elements[1] = v1.elements[1] - v2.elements[1];
         // Don't delete the return statement.
         return this;
     };
@@ -67,10 +69,11 @@ class Vector3 {
       * Divide this vector by a scalar.
       * @return this
       */
-    div(scalar) {
+    div(v, s) {
         // Insert your code here.
         // This function should change this vector (this.elements) and not create a new vector.
-
+        this.elements[0] = v.elements[0] / s;
+        this.elements[1] = v.elements[1] / s;
         // Don't delete the return statement.
         return this;
     };
@@ -79,10 +82,11 @@ class Vector3 {
       * Multiply this vector by a scalar.
       * @return this
       */
-    mul(scalar) {
+    mul(v, s) {
         // Insert your code here.
         // This function should change this vector (this.elements) and not create a new vector.
-
+        this.elements[0] = v.elements[0] * s;
+        this.elements[1] = v.elements[1] * s;
         // Don't delete the return statement.
         return this;
     };
