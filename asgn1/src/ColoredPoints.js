@@ -57,6 +57,10 @@ function main() {
 
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT);
+
+  // Add alpha
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 }
 
 /** ------------------------------------------------------------------------ */
@@ -254,6 +258,11 @@ function addActionsForHtmlUI() {
     g_shapesList.pop();
     renderAllShapes();
   };
+
+  //Alpha
+  document.getElementById('alphaSlide').addEventListener('mouseup', function() {
+    g_selectedColor[3] = this.value / 100;
+  });
 }
 
 function sendTextToHtml(text, htmlID) {
