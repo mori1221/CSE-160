@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Change a point color</title>
+  </head>
+
+  <body onload="main()">
+    <div class="container" style="display: flex; align-items: flex-start; gap: 20px;">
+      <div class="left"> 
+        <canvas id="webgl" width="400" height="400">
+        Please use a browser that supports "canvas"
+        </canvas>
+        <p id="numdot"> XXX </p>
+
+        <h2> Drawing Mode: </h2>
+        <!-- Shapes -->
+        <div class="shapes">
+          <button type="button" id="squa">Squares</button>
+          <button type="button" id="tri">Triangles</button>
+          <button type="button" id="cir">Circles</button>
+        </div>
+
+        <br>
+
+        <!-- Buttons -->
+        <div class="color-buttons">
+          <button type="button" id="green">Green</button>
+          <button type="button" id="red">Red</button>
+          <button type="button" id="clear">Clear</button>
+          <button  style="background-color: rgb(244, 166, 179); color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer;" id="randomBG">
+            Random Background
+          </button>
+          <button type="button" id="eraser">
+            <img src="images/eraser.png" width="30" height="30" alt="Eraser">
+          </button>
+          <button type="button" id="undo">Undo Shapes</button>
+        </div>
+        <!-- Sliders -->
+        <div class="sliders">
+          <p>
+          Red <input type="range" min="0" max="100" value="100" id="redSlide">
+          Green <input type="range" min="0" max="100" value="0" id="greenSlide">
+          <p>
+          Blue <input type="range" min="0" max="100" value="0" id="blueSlide">
+          Size <input type="range" min="5" max="40" value="0" id="sizeSlide">
+          <p>
+          Alpha <input type="range" min="0" max="100" value="100" id="alphaSlide">
+          (Circles) Segment Count <input type="range" min="3" max="40" value="20" id="segmentSlide">
+        </div>
+
+        <script src="../lib/webgl-utils.js"></script>
+        <script src="../lib/webgl-debug.js"></script>
+        <script src="../lib/cuon-utils.js"></script>
+        <script src="Point.js"></script>
+        <script src="Triangle.js"></script>
+        <script src="Circle.js"></script>
+        <script src="asgn2.js"></script>
+      </div>
+
+      <div class="right" style="margin-left: 20px;">
+        <h2>Jialai Li</h2>
+        <h2>jli827@ucsc.edu</h2>
+        <h2>Reference Drawing</h2>
+        <img src="images/myDesign.png" width="300">
+        <button id="artWork">Draw Art</button>
+        <h4> I extended the paint program with an undo system, a spatial eraser tool, and a random background generator. I also implemented alpha blending with an alpha slider to support transparent paint and layered color effects.</h4>
+      </div>
+    </div>
+  </body>
+</html>
