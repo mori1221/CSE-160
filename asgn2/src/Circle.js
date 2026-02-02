@@ -1,34 +1,44 @@
-class Circle {
-    constructor(){
-      this.type="circle";
-      this.position = [0.0, 0.0, 0.0];
-      this.color = [1.0, 1.0, 1.0, 1.0];
-      this.size = 5.0;
-      this.segments = 10;
-    }
-  
-    render() {
-      var xy = this.position;
-      var rgba = this.color;
-      var size = this.size;
-  
-      // Pass the position of a point to a_Position variable
-      // gl.vertexAttrib3f(a_Position, xy[0], xy[1], 0.0);
-      // Pass the color of a point to u_FragColor variable
-      gl.uniform4f(u_FragColor, rgba[0], rgba[1], rgba[2], rgba[3]);
+class Sphere {
+  constructor() {
+    this.type = "sphere";
+    this.color = [1.0, 1.0, 1.0, 1.0];
+    this.matrix = new Matrix4();
+  }
 
-      // Draw
-      let d = size / 200.0; // delta
-      let angleStep=360/this.segments;
-      for (var angle=0; angle<360; angle+=angleStep) {
-        let centerPt = [xy[0], xy[1]];
-        let angle1 = angle;
-        let angle2 = angle+angleStep;
-        let vec1 = [Math.cos(angle1*Math.PI/180)*d, Math.sin(angle1*Math.PI/180)*d];
-        let vec2 = [Math.cos(angle2*Math.PI/180)*d, Math.sin(angle2*Math.PI/180)*d];
-        let pt1 = [centerPt[0]+vec1[0], centerPt[1]+vec1[1]];
-        let pt2 = [centerPt[0]+vec2[0], centerPt[1]+vec2[1]];
-        drawTriangle([xy[0], xy[1], pt1[0],pt1[1],pt2[0], pt2[1]]);  
+  render() {
+    var rgba = this.color;
+    gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
+    gl.uniform4f(u_FragColor, rgba[0], rgba[1], rgba[2], rgba[3]);
+
+    var d = 15; // Step size in degrees
+    for (var t = 0; t < 180; t += d) {
+      for (var r = 0; r < 360; r += d) {
+        // Convert polar coordinates (t=latitude, r=longitude) to Cartesian (x,y,z)
+        // Point 1
+        var x1 = Math.sin(t * Math.PI/180) * Math.cos(r * Math.PI/180);
+        var y1 = Math.sin(t * Math.PI/180) * Math.sin(r * Math.PI/180);
+        var z1 = Math.cos(t * Math.PI/180);
+
+        // Point 2 (down one step)
+        var x2 = Math.sin((t+d) * Math.PI/180) * Math.cos(r * Math.PI/180);
+        var y2 = Math.sin((t+d) * Math.PI/180) * Math.sin(r * Math.PI/180);
+        var z2 = Math.cos((t+d) * Math.PI/180);
+
+        // Point 3 (down and right one step)
+        var x3 = Math.sin((t+d) * Math.PI/180) * Math.cos((r+d) * Math.PI/180);
+        var y3 = Math.sin((t+d) * Math.PI/180) * Math.sin((r+d) * Math.PI/180);
+        var z3 = Math.cos((t+d) * Math.PI/180);
+
+        // Point 4 (right one step)
+        var x4 = Math.sin(t * Math.PI/180) * Math.cos((r+d) * Math.PI/180);
+        var y4 = Math.sin(t * Math.PI/180) * Math.sin((r+d) * Math.PI/180);
+        var z4 = Math.cos(t * Math.PI/180);
+
+        // Face 1
+        drawTriangle3D([x1, y1, z1,  x2, y2, z2,  x4, y4, z4]);
+        // Face 2
+        drawTriangle3D([x2, y2, z2,  x3, y3, z3,  x4, y4, z4]);
       }
     }
+  }
 }
