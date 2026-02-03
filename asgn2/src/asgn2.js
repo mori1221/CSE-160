@@ -62,7 +62,7 @@ function main() {
   canvas.onmousedown = function(ev) {
     if (ev.shiftKey) {
         g_isWalking = true;  // The cat "pokes" into action and starts running!
-        console.log("Poke! Cat is now running.");
+        // console.log("Poke! Cat is now running.");
 
 
         setTimeout(function() {
@@ -110,7 +110,7 @@ function setupWebGL() {
   // Get the rendering context for WebGL
   gl = canvas.getContext("webgl", {preserveDrawingBuffer: true});
   if (!gl) {
-    console.log('Failed to get the rendering context for WebGL');
+    // console.log('Failed to get the rendering context for WebGL');
     return;
   }
   gl.enable(gl.DEPTH_TEST);
@@ -120,35 +120,35 @@ function setupWebGL() {
 function connectVariableToGLSL() {
     // Initialize shaders
     if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
-      console.log('Failed to intialize shaders.');
+      // console.log('Failed to intialize shaders.');
       return;
     }
   
     // // Get the storage location of a_Position
     a_Position = gl.getAttribLocation(gl.program, 'a_Position');
     if (a_Position < 0) {
-      console.log('Failed to get the storage location of a_Position');
+      // console.log('Failed to get the storage location of a_Position');
       return;
     }
   
     // Get the storage location of u_FragColor
     u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
     if (!u_FragColor) {
-      console.log('Failed to get the storage location of u_FragColor');
+      // console.log('Failed to get the storage location of u_FragColor');
       return;
     }
 
     // Get the storage location of u_ModelMatrix
     u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
     if(!u_ModelMatrix) {
-      console.log('Failed to get the storage location of u_ModelMatrix');
+      // console.log('Failed to get the storage location of u_ModelMatrix');
       return;
     }
 
     // Get the storage location of u_GlobalRotateMatrix
     u_GlobalRotateMatrix = gl.getUniformLocation(gl.program, 'u_GlobalRotateMatrix');
     if(!u_GlobalRotateMatrix) {
-      console.log('Failed to get the storage location of u_GlobalRotateMatrix');
+      // console.log('Failed to get the storage location of u_GlobalRotateMatrix');
       return;
     }
 
@@ -217,6 +217,7 @@ function updateAnimationAngles() {
     g_yellowAngle = (2*Math.sin(g_seconds));
     if (Math.floor(g_seconds) % 4 === 0 && (g_seconds % 1) < 0.2) {
       g_ears = Math.sin(g_seconds * 60) * 15;
+      // console.log('ear',g_ears);
     } else {
       g_ears = 0;
     }
@@ -488,66 +489,71 @@ function addActionsForHtmlUI() {
   // ON/OFF Buttons
   document.getElementById('on').onclick = function() {
     g_Animation=true;
-    console.log('on',g_Animation);
+    // console.log('on',g_Animation);
   };
   document.getElementById('off').onclick = function() {
     g_Animation=false;
-    console.log('off',g_Animation);
+    // console.log('off',g_Animation);
   };
   document.getElementById('mOn').onclick = function() {
     g_magentaAnimation=true;
-    console.log('on',g_magentaAnimation);
+    // console.log('on',g_magentaAnimation);
   };
   document.getElementById('mOff').onclick = function() {
     g_magentaAnimation=false;
-    console.log('off',g_magentaAnimation);
+    // console.log('off',g_magentaAnimation);
   };
   document.getElementById('tOn').onclick = function() {
     g_tailAnimation=true;
-    console.log('on',g_tailAnimation);
+    // console.log('on',g_tailAnimation);
   };
   document.getElementById('tOff').onclick = function() {
     g_tailAnimation=false;
-    console.log('off',g_tailAnimation);
+    // console.log('off',g_tailAnimation);
   };
 
 
   // Color Sliders
   document.getElementById('redSlide').addEventListener( 'mouseup', function() {
     g_selectedColor[0] = this.value/100;
-    console.log('rgb', g_selectedColor);
+    // console.log('rgb', g_selectedColor);
   });
   document.getElementById('greenSlide').addEventListener('mouseup', function() {
     g_selectedColor[1] = this.value/100;
-    console.log('rgb', g_selectedColor);
+    // console.log('rgb', g_selectedColor);
   });
   document.getElementById('blueSlide').addEventListener('mouseup', function() {
     g_selectedColor[2] = this.value/100;
-    console.log('rgb', g_selectedColor);
+    // console.log('rgb', g_selectedColor);
   });
 
   // Angle Slider
   document.getElementById('angleSlide').addEventListener('mousemove', function() {
     g_globalAngle = this.value;
     renderScene();
-    console.log('angle', g_globalAngle);
+    // console.log('angle', g_globalAngle);
   });
 
   // Yellow/Magenta Arm Slider
   document.getElementById('yellowSlide').addEventListener('mousemove', function() {
     g_yellowAngle = this.value;
     renderScene();
-    console.log('yellow angle', g_yellowAngle);
+    // console.log('yellow angle', g_yellowAngle);
   });
   document.getElementById('magentaSlide').addEventListener('mousemove', function() {
     g_magentaAngle = this.value;
     renderScene();
-    console.log('magenta angle', g_magentaAngle);
+    // console.log('magenta angle', g_magentaAngle);
   });
   document.getElementById('tailSlide').addEventListener('mousemove', function() {
     g_tailAngle = this.value;
     renderScene();
-    console.log('tail angle', g_tailAngle);
+    // console.log('tail angle', g_tailAngle);
+  });
+  document.getElementById('earSlide').addEventListener('mousemove', function() {
+    g_ears = parseFloat(this.value);
+    renderScene();
+    // console.log('ear angle', g_ears);
   });
   
   // Set random BG
@@ -559,7 +565,7 @@ function addActionsForHtmlUI() {
     gl.clearColor(r, g, b, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     renderScene();
-    console.log(`New BG: ${r.toFixed(2)}, ${g.toFixed(2)}, ${b.toFixed(2)}`);
+    // console.log(`New BG: ${r.toFixed(2)}, ${g.toFixed(2)}, ${b.toFixed(2)}`);
   };  
   
   // Eraser
@@ -572,7 +578,7 @@ function addActionsForHtmlUI() {
 function sendTextToHtml(text, htmlID) {
   var htmlElm = document.getElementById('numdot');
   if (!htmlElm) {
-    console.log('Failed to get ' + htmlID);
+    // console.log('Failed to get ' + htmlID);
     return;
   }
   htmlElm.innerHTML = text;
