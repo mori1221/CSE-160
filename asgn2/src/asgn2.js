@@ -37,12 +37,14 @@ let g_globalAngle = 0;
 let g_yellowAngle = 0;
 let g_magentaAngle = 0;
 let g_ears = 0;
-let g_Animation = true;
+let g_Animation = false;
 let g_magentaAnimation = false;
 let g_isWalking = false;
 let g_walkAnim = 0;
 let g_globalAngleX = 0;
 let g_globalAngleY = 0;
+let g_tailAnimation = false;
+let g_tailAngle = 0;
 var g_shapesList = [] // The array for the color, scale, and position of a mouse press
 
 
@@ -73,7 +75,7 @@ function main() {
     if (ev.buttons == 1) {
       g_globalAngleX += ev.movementX; 
       g_globalAngleY += ev.movementY;
-      renderAllShapes();
+      renderScene();
       click(ev);
     }
   }
@@ -222,6 +224,9 @@ function updateAnimationAngles() {
   if(g_magentaAnimation) {
     g_magentaAngle = (15*Math.sin(0.33*g_seconds));
   }
+  if (g_tailAnimation) {
+    g_tailAngle = g_seconds;
+  }
 }
 
 /** Draw every elements that is supposed to be formed a cat. */
@@ -345,8 +350,7 @@ function renderScene() {
   if(!g_isWalking) {
     mid.matrix.translate(0, -0.32, -0.025);
     mid.matrix.rotate(-g_yellowAngle, -0.5, 0, 1);
-    mid.matrix.scale(0.125, 0.4, 0.125); 
-    g_Animation = true;
+    mid.matrix.scale(0.125, 0.4, 0.125);
   } else {
     g_Animation = false;
     mid.matrix.translate(0, -0.15, -0.3);
@@ -444,7 +448,7 @@ function renderScene() {
     segment.color = [0, 0, 0, 1.0];
     
     //big sweeping movement: 
-    var angle = Math.sin(g_seconds  + (i * 0.5)) * 20; 
+    var angle = Math.sin(g_tailAngle  + (i * 0.5)) * 20; 
     
     //joint
     baseTailMatrix.rotate(angle, 0, 1, 0);
@@ -498,8 +502,15 @@ function addActionsForHtmlUI() {
     g_magentaAnimation=false;
     console.log('off',g_magentaAnimation);
   };
+  document.getElementById('tOn').onclick = function() {
+    g_tailAnimation=true;
+    console.log('on',g_tailAnimation);
+  };
+  document.getElementById('tOff').onclick = function() {
+    g_tailAnimation=false;
+    console.log('off',g_tailAnimation);
+  };
 
-  
 
   // Color Sliders
   document.getElementById('redSlide').addEventListener( 'mouseup', function() {
@@ -532,6 +543,11 @@ function addActionsForHtmlUI() {
     g_magentaAngle = this.value;
     renderScene();
     console.log('magenta angle', g_magentaAngle);
+  });
+  document.getElementById('tailSlide').addEventListener('mousemove', function() {
+    g_tailAngle = this.value;
+    renderScene();
+    console.log('tail angle', g_tailAngle);
   });
   
   // Set random BG
