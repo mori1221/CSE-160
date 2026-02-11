@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Change a point color</title>
+  </head>
+
+  <body onload="main()">
+    <div class="container" style="display: flex; align-items: flex-start; gap: 20px;">
+      <div class="left"> 
+        <canvas id="webgl" width="500" height="500">
+        Please use a browser that supports "canvas"
+        </canvas>
+        <p id="numdot"> XXX </p>
+
+        <!-- Buttons -->
+        <div class="animation-buttons">
+          <h3>Animation:</h3>
+          <span>yellow:</span>
+          <button type="button" id="on">ON</button>
+          <button type="button" id="off">OFF</button>
+          <span>magenta:</span>
+          <button type="button" id="mOn">ON</button>
+          <button type="button" id="mOff">OFF</button>
+          <span>tail:</span>
+          <button type="button" id="tOn">ON</button>
+          <button type="button" id="tOff">OFF</button>
+        </div>
+        <div class="color-buttons">
+          <button type="button" id="green">Green</button>
+          <button type="button" id="red">Red</button>
+          <button type="button" id="clear">Clear</button>
+          <button  style="background-color: rgb(244, 166, 179); color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer;" id="randomBG">
+            Random Background
+          </button>
+          <button type="button" id="eraser">
+            <img src="images/eraser.png" width="30" height="30" alt="Eraser">
+          </button>
+          <button type="button" id="undo">Undo Shapes</button>
+        </div>
+        <!-- Sliders -->
+        <div class="sliders">
+          <p>
+          Magenta <input type="range" min="-45" max="45" value="0" id="magentaSlide">
+          Yellow <input type="range" min="-10" max="10" value="0" id="yellowSlide">
+          Tail <input type="range" min="-1" max="1" value="0" id="tailSlide">
+          Camera Angle <input type="range" min="0" max="360" value="5" id="angleSlide">
+          Ear Control <input type="range" min="-10" max="60" value="0" id="earSlide">
+          <!-- Alpha <input type="range" min="0" max="100" value="100" id="alphaSlide">
+          (Circles) Segment Count <input type="range" min="3" max="40" value="20" id="segmentSlide"> -->
+          <p>
+            Red <input type="range" min="0" max="100" value="100" id="redSlide">
+            Green <input type="range" min="0" max="100" value="0" id="greenSlide">
+          <p>
+            Blue <input type="range" min="0" max="100" value="0" id="blueSlide">
+            Size <input type="range" min="5" max="40" value="0" id="sizeSlide">
+        </div>
+
+        <script src="../lib/webgl-utils.js"></script>
+        <script src="../lib/webgl-debug.js"></script>
+        <script src="../lib/cuon-utils.js"></script>
+        <script src="../lib/cuon-matrix.js"></script>
+        <script src="Point.js"></script>
+        <script src="Triangle.js"></script>
+        <script src="Circle.js"></script>
+        <script src="Cube.js"></script>
+        <script src="Cone.js"></script>
+        <script src="asgn3.js"></script>
+      </div>
+
+      <div class="right" style="margin-left: 20px;">
+        <h2>Jialai Li</h2>
+        <h2>jli827@ucsc.edu</h2>
+        <h2>Note to Grader</h2>
+        <h4>Dear Grader,  </h4>
+        <h4>Hello! I have created a cat that is using more than 20 parts. There are several nested joint movements, such as head/body slowly moving, tail swings, and ears shakes for random time intervals. For poke, holding shift and clicking triggers a "frightened" state where the cat stands up and performs a running animation for 3 seconds before sitting back down.</h4>
+      </div>
+    </div>
+  </body>
+</html>
