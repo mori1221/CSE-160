@@ -3,11 +3,13 @@ class Cone {
       this.type = "cone";
       this.color = [1.0, 1.0, 1.0, 1.0];
       this.matrix = new Matrix4();
+      this.textureNum = -2;
       this.segments = 12; // High for smoothness, low for a "low-poly" ear
     }
   
     render() {
         var rgba = this.color;
+        gl.uniform1i(u_whichTexture, this.textureNum);
         gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
         
         let segments = 12; 

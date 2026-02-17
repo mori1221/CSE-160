@@ -5,12 +5,16 @@ class Point{
     this.position = [0.0, 0.0, 0.0];
     this.color = [1.0, 1.0, 1.0, 1.0];
     this.size = 5.0;
+    this.textureNum = -2;
   }
   
   render() {
     var xy = this.position;
     var rgba = this.color;
     var size = this.size;
+    
+    // Pass the texture number
+    gl.uniform1i(u_whichTexture, this.textureNum);
 
     gl.disableVertexAttribArray(a_Position);
     // Pass the position of a point to a_Position variable

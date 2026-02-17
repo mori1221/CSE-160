@@ -3,10 +3,12 @@ class Sphere {
     this.type = "sphere";
     this.color = [1.0, 1.0, 1.0, 1.0];
     this.matrix = new Matrix4();
+    this.textureNum = -2;
   }
 
   render() {
     var rgba = this.color;
+    gl.uniform1i(u_whichTexture, this.textureNum);
     gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
     gl.uniform4f(u_FragColor, rgba[0], rgba[1], rgba[2], rgba[3]);
 
@@ -34,10 +36,24 @@ class Sphere {
         var y4 = Math.sin(t * Math.PI/180) * Math.sin((r+d) * Math.PI/180);
         var z4 = Math.cos(t * Math.PI/180);
 
+        // --- UV Coordinates (Normalized 0 to 1) ---
+        // var uv1 = [t/180, r/360];
+        // var uv2 = [(t+d)/180, r/360];
+        // var uv3 = [(t+d)/180, (r+d)/360];
+        // var uv4 = [t/180, (r+d)/360];
+
         // Face 1
         drawTriangle3D([x1, y1, z1,  x2, y2, z2,  x4, y4, z4]);
+        // drawTriangle3DUV(
+        //   [x1, y1, z1,  x2, y2, z2,  x4, y4, z4], 
+        //   [uv1[0], uv1[1], uv2[0], uv2[1], uv4[0], uv4[1]]
+        // );
         // Face 2
         drawTriangle3D([x2, y2, z2,  x3, y3, z3,  x4, y4, z4]);
+        // drawTriangle3DUV(
+        //   [x2, y2, z2,  x3, y3, z3,  x4, y4, z4], 
+        //   [uv2[0], uv2[1], uv3[0], uv3[1], uv4[0], uv4[1]]
+        // );
       }
     }
   }

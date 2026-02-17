@@ -13,8 +13,8 @@ var VSHADER_SOURCE = `
   uniform mat4 u_ProjectionMatrix;
   
   void main() {
-    gl_Position = u_GlobalRotateMatrix * u_ModelMatrix * a_Position;
-    //gl_Position = u_ProjectionMatrix * u_ViewMatrix * u_GlobalRotateMatrix * u_ModelMatrix * a_Position;
+    //gl_Position = u_GlobalRotateMatrix * u_ModelMatrix * a_Position;
+    gl_Position = u_ProjectionMatrix * u_ViewMatrix * u_GlobalRotateMatrix * u_ModelMatrix * a_Position;
     v_UV = a_UV;
   }`
 
@@ -23,9 +23,27 @@ var FSHADER_SOURCE = `
   precision mediump float;
   varying vec2 v_UV;
   uniform vec4 u_FragColor;
+  uniform sampler2D u_Sampler0;
+  uniform sampler2D u_Sampler1;
+  uniform sampler2D u_Sampler2;
+  uniform sampler2D u_Sampler3;
+  uniform int u_whichTexture;
   void main() {
-    gl_FragColor = u_FragColor;
-    gl_FragColor = vec4(v_UV, 1.0, 1.0);
+    if (u_whichTexture == -2) {
+      gl_FragColor = u_FragColor; //Use color
+    } else if (u_whichTexture == -1) {
+      gl_FragColor = vec4(v_UV, 1.0,1.0); //Use UV debug color
+    } else if (u_whichTexture == 0) {
+      gl_FragColor = texture2D(u_Sampler0, v_UV); //Use texture0
+    } else if (u_whichTexture == 1) {
+      gl_FragColor = texture2D(u_Sampler1, v_UV);
+    } else if (u_whichTexture == 2) {
+      gl_FragColor = texture2D(u_Sampler2, v_UV);
+    } else if (u_whichTexture == 3) {
+      gl_FragColor = texture2D(u_Sampler3, v_UV);
+    } else {
+      gl_FragColor = vec4(1, 0.2, 0.2, 1); //error
+    }
   }`
 
 // Global Variables
@@ -43,6 +61,11 @@ let u_ModelMatrix;
 let u_GlobalRotateMatrix;
 let u_ViewMatrix;
 let u_ProjectionMatrix;
+let u_Sampler0;
+let u_Sampler1;
+let u_Sampler2;
+let u_Sampler3;
+let u_whichTexture;
 let g_selectedColor = [0,0,0,1.0];
 let g_selectedSize = 5;
 let g_selectedShape = POINT;
@@ -61,7 +84,9 @@ let g_globalAngleY = 0;
 let g_tailAnimation = false;
 let g_tailAngle = 0;
 var g_shapesList = [] // The array for the color, scale, and position of a mouse press
-
+let g_tunaPos = null;     
+let g_catPos = {x: 0, z: 0}; // Cat's current world position
+let g_catSpeed = 0.02;
 
 function main() {
   
@@ -72,27 +97,29 @@ function main() {
   // Set up actions for HTML and UI
   addActionsForHtmlUI();
 
+  document.onkeydown = keydown;
+
+  initTextures();
+
   // Register function (event handler) to be called on a mouse press
-  canvas.onmousedown = click;
-  canvas.onmousedown = function(ev) {
-    if (ev.shiftKey) {
-        g_isWalking = true;  // The cat "pokes" into action and starts running!
-        // console.log("Poke! Cat is now running.");
+  // canvas.onmousedown = click;
+  // canvas.onmousedown = function(ev) {
+  //   if (ev.shiftKey) {
+  //       g_isWalking = true;  // The cat "pokes" into action and starts running!
+  //       // console.log("Poke! Cat is now running.");
 
 
-        setTimeout(function() {
-          g_isWalking = false;
-        }, 3000);
-    }
-};
+  //       setTimeout(function() {
+  //         g_isWalking = false;
+  //       }, 3000);
+  //   }
+  // };
 
   canvas.onmousemove = function(ev) {
-    if (ev.buttons == 1) {
-      g_globalAngleX += ev.movementX; 
-      g_globalAngleY += ev.movementY;
-      renderScene();
-      click(ev);
-    }
+    let sensitivity = 0.2;
+    let deltaX = ev.movementX * sensitivity;
+    g_camera.onMove(deltaX);
+    renderScene();
   }
 
   // Specify the color for clearing <canvas>
@@ -106,8 +133,146 @@ function main() {
 var g_startTime=performance.now()/1000.0;
 var g_seconds = performance.now()/1000.0-g_startTime;
 
+function initTextures() {
+  // Create an image object
+  var image = new Image(); 
+  if(!image) {
+    console.log('Failed to create image');
+    return false;
+  }
+  // Register the event handler to be called on loading an image
+  image.onload = function(){ sendImageToTEXTTURE0(image); };
+  // Tell the browser to load an image
+  image.src = 'images/sky.png';
+
+
+  // Floor texture
+  var image1 = new Image();
+  image1.onload = function(){ sendImageToTEXTTURE1(image1); };
+  image1.src = 'images/wood-floor.png';
+
+  // Wall texture
+  var image2 = new Image();
+  image2.onload = function(){ sendImageToTEXTTURE2(image2); };
+  image2.src = 'images/wall.png';
+
+  // Broken Wall texture
+  var image3 = new Image();
+  image3.onload = function(){ sendImageToTEXTTURE3(image3); };
+  image3.src = 'images/broken-wall.png';
+
+  return true;
+}
+
+function sendImageToTEXTTURE0(image){
+  // Create a texture object
+  var texture = gl.createTexture();
+  if(!texture) {
+    console.log('Failed to create texture');
+    return false;
+  }
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
+  // Enable the texture unit 0
+  gl.activeTexture(gl.TEXTURE0);
+  // Bind the texture object to the target
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  // Set the texture parameters
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  // Set the texture image
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+  // Set the texture unit 0 to the sampler
+  gl.uniform1i(u_Sampler0, 0);
+
+  console.log('Finished loadTexture');
+}
+
+function sendImageToTEXTTURE1(image){
+  // Create a texture object
+  var texture = gl.createTexture();
+  if(!texture) {
+    console.log('Failed to create texture');
+    return false;
+  }
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
+  // Enable the texture unit 0
+  gl.activeTexture(gl.TEXTURE1);
+  // Bind the texture object to the target
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  // Set the texture parameters
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  // Set the texture image
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+  // Set the texture unit 0 to the sampler
+  gl.uniform1i(u_Sampler1, 1);
+
+  console.log('Finished loadTexture');
+}
+
+function sendImageToTEXTTURE2(image) {
+   // Create a texture object
+   var texture = gl.createTexture();
+   if(!texture) {
+     console.log('Failed to create texture');
+     return false;
+   }
+   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
+   // Enable the texture unit 0
+   gl.activeTexture(gl.TEXTURE2);
+   // Bind the texture object to the target
+   gl.bindTexture(gl.TEXTURE_2D, texture);
+   // Set the texture parameters
+   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+   // Set the texture image
+   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+   // Set the texture unit 0 to the sampler
+   gl.uniform1i(u_Sampler2, 2);
+}
+
+function sendImageToTEXTTURE3(image) {
+  // Create a texture object
+  var texture = gl.createTexture();
+  if(!texture) {
+    console.log('Failed to create texture');
+    return false;
+  }
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
+  // Enable the texture unit 0
+  gl.activeTexture(gl.TEXTURE3);
+  // Bind the texture object to the target
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  // Set the texture parameters
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  // Set the texture image
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+  // Set the texture unit 0 to the sampler
+  gl.uniform1i(u_Sampler3, 3);
+}
+
 function tick() {
   g_seconds = performance.now()/1000.0-g_startTime;
+
+  if (g_tunaPos !== null) {
+    // target in world coordinates
+    let targetX = g_tunaPos.x - 16;
+    let targetZ = g_tunaPos.z - 16;
+
+    // direction
+    let dx = targetX - g_catPos.x;
+    let dz = targetZ - g_catPos.z;
+    let distance = Math.sqrt(dx*dx + dz*dz);
+
+    if (distance > 0.1) {
+        // Move toward tuna
+        g_catPos.x += (dx / distance) * g_catSpeed;
+        g_catPos.z += (dz / distance) * g_catSpeed;
+        g_isWalking = true;
+    } else {
+        // Cat reached the tuna!
+        g_tunaPos = null;
+        g_isWalking = false;
+        console.log("Eat Tuna!");
+    }
+  }
 
   // Update Animation Angles
   updateAnimationAngles();
@@ -172,6 +337,40 @@ function connectVariableToGLSL() {
     if(!u_GlobalRotateMatrix) {
       // console.log('Failed to get the storage location of u_GlobalRotateMatrix');
       return;
+    }
+
+    // Get the storage location of u_ViewMatrix
+    u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
+    if(!u_ViewMatrix) {
+      // console.log('Failed to get the storage location of u_ViewMatrix');
+      return;
+    }
+
+    // Get the storage location of u_ProjectionMatrix
+    u_ProjectionMatrix = gl.getUniformLocation(gl.program, 'u_ProjectionMatrix');
+    if(!u_ProjectionMatrix) {
+      // console.log('Failed to get the storage location of u_ProjectionMatrix');
+      return;
+    }
+
+    // Get the storage location of the u_Sampler
+    u_Sampler0 = gl.getUniformLocation(gl.program, 'u_Sampler0');
+    if(!u_Sampler0) {
+      console.log('Failed to create storage location u_Sampler0');
+      return false;
+    }
+
+    // Get the storage location of the u_Sampler
+    u_Sampler1 = gl.getUniformLocation(gl.program, 'u_Sampler1');
+
+    u_Sampler2 =  gl.getUniformLocation(gl.program, 'u_Sampler2');
+    u_Sampler3 =  gl.getUniformLocation(gl.program, 'u_Sampler3');
+  
+  
+    // Get the storage location of u_whichTexture
+    u_whichTexture = gl.getUniformLocation(gl.program, 'u_whichTexture');
+    if (!u_whichTexture) {
+      console.log('Failed to get the storage location of u_whichTexture');
     }
 
     // Set an initial value for this matrix to identity
@@ -252,11 +451,70 @@ function updateAnimationAngles() {
   }
 }
 
+var g_eye = [0, 0, 3];
+var g_at = [0, 0, -100];
+var g_up = [0, 1, 0];
+
+var g_camera = new Camera();
+
+// var g_map=[
+//   [1, 1, 1, 1, 1, 1, 1, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 0, 0, 1, 1, 0, 0, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 1],
+//   [1, 0, 0, 1, 1, 0, 0, 1],
+//   [1, 0, 0, 0, 0, 0, 0, 1],
+// ];
+
+var g_map = [];
+for (let i = 0; i < 32; i++) {
+  g_map[i] = new Array(32).fill(0);
+}
+
+function drawMap() {
+  for (x=0; x<32; x++){
+    for (y=0; y<32;y++) {
+      if(x==0 || x==31 || y==0 || y==31){
+        var body = new Cube();
+        body.textureNum = 2;
+        body.color = [0.8,1,1,1];
+        body.matrix.translate(0, -0.85, 0);
+        body.matrix.scale(0.3, 0.3, 0.3);
+        body.matrix.translate(x-16, 0, y-16);
+        body.renderfast();
+      }
+    }
+  }
+}
+
 /** Draw every elements that is supposed to be formed a cat. */
 function renderScene() {
+
+  if (!u_whichTexture) {
+    u_whichTexture = gl.getUniformLocation(gl.program, 'u_whichTexture');
+  }
+  gl.uniform1i(u_whichTexture, 0);
   
   // Check how long it takes to draw
   var startTime = performance.now();
+
+  // Pass the projection matrix
+  var projMat = new Matrix4();
+  projMat.setPerspective(40, 1*canvas.width/canvas.height, 1,100);
+  gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements);
+
+  // Pass the view matrix 
+  var viewMat = new Matrix4();
+  viewMat.setLookAt(
+    g_camera.eye.elements[0], g_camera.eye.elements[1], g_camera.eye.elements[2], 
+    g_camera.at.elements[0],  g_camera.at.elements[1],  g_camera.at.elements[2], 
+    g_camera.up.elements[0],  g_camera.up.elements[1],  g_camera.up.elements[2]
+  );
+  // viewMat.setLookAt(g_eye[0], g_eye[1], g_eye[2], g_at[0], g_at[1], g_at[2], g_up[0], g_up[1], g_up[2]);
+  //viewMat.setLookAt(0,0,3, 0,0,-100, 0,1,0); // (eye, at, up)
+  gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements);
   
   // Pass the matrix to u_ModelMatrix attribute
   var globalRotMat = new Matrix4().rotate(g_globalAngle, 0,1,0);
@@ -268,9 +526,104 @@ function renderScene() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  // Draw the body cube
+  // Draw Map
+  drawMap();
+
+  // Draw the floor
+  var body = new Cube();
+  body.color = [1, 0, 0, 1];
+  body.textureNum = 1;
+  body.matrix.translate(0,-1, 0);
+  body.matrix.scale(10,5,15);
+  body.matrix.translate(-0.5, 0, -0.5);
+  body.render();
+
+  // Draw the floor
+  var body = new Cube();
+  body.color = [1, 0, 0, 1];
+  body.textureNum = 1;
+  body.matrix.translate(0,-1, 0);
+  body.matrix.scale(10,0,10);
+  body.matrix.translate(-0.5, 0, -0.5);
+  body.render();
+
+  // Room 
+  var leftWall = new Cube();
+  leftWall.color = [1, 1, 1, 1];
+  leftWall.textureNum = 3;
+  leftWall.matrix.translate(-5, -0.87, 0);
+  leftWall.matrix.scale(0.1, 4, 10);       
+  leftWall.matrix.translate(-0.5, 0, -0.5);
+  leftWall.render();
+
+  var rightWall = new Cube();
+  rightWall.color = [1, 1, 1, 1];
+  rightWall.textureNum = 3;
+  rightWall.matrix.translate(5, -0.87, 0);  
+  rightWall.matrix.scale(0.1, 4, 10);     
+  rightWall.matrix.translate(-0.5, 0, -0.5); 
+  rightWall.render();
+
+
+  var frontWall = new Cube();
+  frontWall.color = [1, 1, 1, 1];
+  frontWall.textureNum = 3;
+  frontWall.matrix.translate(0, -0.87, -5); 
+  frontWall.matrix.scale(10, 4, 0.1);     
+  frontWall.matrix.translate(-0.5, 0, -0.5); 
+  frontWall.render();
+
+  var door = new Cube();
+  door.color = [0.4, 0.2, 0, 1];
+  door.textureNum = -2; 
+  door.matrix.translate(0, -0.87, -4.9); 
+  door.matrix.scale(1.9, 3, 0.05); 
+  door.matrix.translate(-0.5, 0, -0.5); 
+  door.render();
+
+  var knob = new Cube();
+  knob.color = [1, 0.84, 0, 1]; 
+  knob.textureNum = -2;     
+  knob.matrix.translate(0.7, 0.5, -4.85); 
+  knob.matrix.scale(0.1, 0.1, 0.1); 
+  knob.matrix.translate(-0.5, 0, -0.5); 
+  knob.render();
+
+ 
+  var backWall = new Cube();
+  backWall.color = [1, 1, 1, 1];
+  backWall.textureNum = 3;
+  backWall.matrix.translate(0, -0.87, 5);  
+  backWall.matrix.scale(10, 4, 0.1);       
+  backWall.matrix.translate(-0.5, 0, -0.5); 
+  backWall.render()
+
+  // Draw a sky
+  var sky = new Cube();
+  sky.color = [1,0,0, 1];
+  sky.textureNum =0;
+  sky.matrix.scale(50, 50, 50);
+  sky.matrix.translate(-0.5, -0.5, -0.5);
+  sky.render();
+
+  // Draw Tuna
+  if (g_tunaPos) {
+    var tuna = new Cube();
+    // tuna.textureNum = -5; // Or a specific tuna texture
+    tuna.color = [1, 0.5, 0, 1];
+    tuna.matrix.translate(g_tunaPos.x - 16, -0.8, g_tunaPos.z - 16);
+    tuna.matrix.scale(0.2, 0.1, 0.2);
+    tuna.render();
+  }
+
+  //---------------------- CAT -------------------------------//
+  var catBaseMat = new Matrix4();
+  catBaseMat.translate(g_catPos.x, 0, g_catPos.z);
+  // Draw the cat body cube
   var body = new Sphere();
   body.color = [0, 0, 0.0, 1];
+  body.textureNum = -2;
+  body.matrix = new Matrix4(catBaseMat);
   if(!g_isWalking) {
     body.matrix.translate(0, -0.55, 0.1);
     body.matrix.rotate(-10,1,0,0);
@@ -286,6 +639,7 @@ function renderScene() {
   function drawLeg(x, y, z, swing) {
     var leg = new Cube();
     leg.color = [0, 0, 0, 1];
+    leg.textureNum = 6;
     leg.matrix.translate(x, y, z);
     if(g_isWalking) {
       leg.matrix.translate(0.08, 0.8, 0, 1);
@@ -329,7 +683,6 @@ function renderScene() {
   // Draw a neck
   var neck = new Cube();
   neck.color = [0.996, 0.894, 0.565, 1.0];
-
   if(g_isWalking ) {
     neck.matrix.setTranslate(0, -0.55, -0.4);
   } else {
@@ -508,6 +861,9 @@ function renderScene() {
 }
 
 function addActionsForHtmlUI() {
+  // Add tuna or not
+  document.getElementById('addTuna').onclick = handleAddTuna;
+  document.getElementById('deleteTuna').onclick = () => { g_tunaPos = null; g_isWalking = false; };
   // ON/OFF Buttons
   document.getElementById('on').onclick = function() {
     g_Animation=true;
@@ -533,21 +889,6 @@ function addActionsForHtmlUI() {
     g_tailAnimation=false;
     // console.log('off',g_tailAnimation);
   };
-
-
-  // Color Sliders
-  document.getElementById('redSlide').addEventListener( 'mouseup', function() {
-    g_selectedColor[0] = this.value/100;
-    // console.log('rgb', g_selectedColor);
-  });
-  document.getElementById('greenSlide').addEventListener('mouseup', function() {
-    g_selectedColor[1] = this.value/100;
-    // console.log('rgb', g_selectedColor);
-  });
-  document.getElementById('blueSlide').addEventListener('mouseup', function() {
-    g_selectedColor[2] = this.value/100;
-    // console.log('rgb', g_selectedColor);
-  });
 
   // Angle Slider
   document.getElementById('angleSlide').addEventListener('mousemove', function() {
@@ -579,22 +920,22 @@ function addActionsForHtmlUI() {
   });
   
   // Set random BG
-  document.getElementById('randomBG').onclick = function() {
-    const r = Math.random();
-    const g = Math.random();
-    const b = Math.random();
-    g_BGColor = [r,g,b,1];
-    gl.clearColor(r, g, b, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    renderScene();
-    // console.log(`New BG: ${r.toFixed(2)}, ${g.toFixed(2)}, ${b.toFixed(2)}`);
-  };  
+  // document.getElementById('randomBG').onclick = function() {
+  //   const r = Math.random();
+  //   const g = Math.random();
+  //   const b = Math.random();
+  //   g_BGColor = [r,g,b,1];
+  //   gl.clearColor(r, g, b, 1.0);
+  //   gl.clear(gl.COLOR_BUFFER_BIT);
+  //   renderScene();
+  //   // console.log(`New BG: ${r.toFixed(2)}, ${g.toFixed(2)}, ${b.toFixed(2)}`);
+  // };  
   
   // Eraser
-  document.getElementById('eraser').onclick = function() {
-    g_selectedShape = ERASER;
-    g_selectedColor = g_BGColor.slice();
-  };
+  // document.getElementById('eraser').onclick = function() {
+  //   g_selectedShape = ERASER;
+  //   g_selectedColor = g_BGColor.slice();
+  // };
 }
 
 function sendTextToHtml(text, htmlID) {
@@ -616,4 +957,53 @@ function addMouseControls(canvas) {
       renderScene();
     }
   };
+}
+
+// Change it to WASD
+function keydown(ev) {
+  if (ev.key == 'w' || ev.key == 'W') {
+    g_camera.forward();
+  } else if (ev.key == 's' || ev.key == 'S') {
+    g_camera.back();
+  } else if (ev.key == 'a' || ev.key == 'A') {
+    g_camera.left();
+  } else if (ev.key == 'd' || ev.key == 'D') {
+    g_camera.right();
+  } else if (ev.key == 'q' || ev.key == 'Q') {
+    g_camera.panRight();
+  } else if (ev.key == 'e' || ev.key == 'E') {
+    g_camera.panLeft();
+  } else if (ev.key == 'z' || ev.key == 'Z') {
+    let pos = g_camera.getLookedAtGrid();
+    if (pos.x >= 0 && pos.x < 32 && pos.z >= 0 && pos.z < 32) {
+        g_map[pos.x][pos.z] += 1;
+    }
+  } else if (ev.key == 'x' || ev.key == 'X') {
+    let pos = g_camera.getLookedAtGrid();
+    if (pos.x >= 0 && pos.x < 32 && pos.z >= 0 && pos.z < 32) {
+        if (g_map[pos.x][pos.z] > 0) g_map[pos.x][pos.z] -= 1; 
+    }
+  }
+
+  renderScene(); 
+}
+
+function handleAddTuna() {
+  let pos = g_camera.getLookedAtGrid();
+  g_tunaPos = pos;
+  g_isWalking = true;
+  console.log("Tuna placed at:", pos.x, pos.z);
+}
+
+function saveWorld() {
+  localStorage.setItem("myWorld", JSON.stringify(g_map));
+  console.log("World Saved!");
+}
+
+function loadWorld() {
+  let saved = localStorage.getItem("myWorld");
+  if (saved) {
+      g_map = JSON.parse(saved);
+      renderScene();
+  }
 }
