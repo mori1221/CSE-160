@@ -27,8 +27,11 @@ var FSHADER_SOURCE = `
   uniform sampler2D u_Sampler1;
   uniform sampler2D u_Sampler2;
   uniform sampler2D u_Sampler3;
+  uniform sampler2D u_Sampler4;
   uniform int u_whichTexture;
+  uniform float u_texColorWeight;
   void main() {
+    vec4 texColor = vec4(1.0);
     if (u_whichTexture == -2) {
       gl_FragColor = u_FragColor; //Use color
     } else if (u_whichTexture == -1) {
@@ -41,6 +44,10 @@ var FSHADER_SOURCE = `
       gl_FragColor = texture2D(u_Sampler2, v_UV);
     } else if (u_whichTexture == 3) {
       gl_FragColor = texture2D(u_Sampler3, v_UV);
+    } else if (u_whichTexture == 4) {
+      gl_FragColor = texture2D(u_Sampler4, v_UV);
+    } else if (u_whichTexture == 5) {
+      gl_FragColor = mix(u_FragColor, texColor, u_texColorWeight);
     } else {
       gl_FragColor = vec4(1, 0.2, 0.2, 1); //error
     }
@@ -61,10 +68,12 @@ let u_ModelMatrix;
 let u_GlobalRotateMatrix;
 let u_ViewMatrix;
 let u_ProjectionMatrix;
+let u_texColorWeight;
 let u_Sampler0;
 let u_Sampler1;
 let u_Sampler2;
 let u_Sampler3;
+let u_Sampler4;
 let u_whichTexture;
 let g_selectedColor = [0,0,0,1.0];
 let g_selectedSize = 5;
@@ -161,6 +170,11 @@ function initTextures() {
   image3.onload = function(){ sendImageToTEXTTURE3(image3); };
   image3.src = 'images/broken-wall.png';
 
+  //Fish (tuna/salmon?)
+  var image4 = new Image();
+  image4.onload = function(){ sendImageToTEXTTURE4(image4); };
+  image4.src = 'images/fish.jpg';
+
   return true;
 }
 
@@ -246,6 +260,26 @@ function sendImageToTEXTTURE3(image) {
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
   // Set the texture unit 0 to the sampler
   gl.uniform1i(u_Sampler3, 3);
+}
+
+function sendImageToTEXTTURE4(image) {
+  // Create a texture object
+  var texture = gl.createTexture();
+  if(!texture) {
+    console.log('Failed to create texture');
+    return false;
+  }
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
+  // Enable the texture unit 0
+  gl.activeTexture(gl.TEXTURE4);
+  // Bind the texture object to the target
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  // Set the texture parameters
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  // Set the texture image
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+  // Set the texture unit 0 to the sampler
+  gl.uniform1i(u_Sampler4, 4);
 }
 
 function tick() {
@@ -365,6 +399,9 @@ function connectVariableToGLSL() {
 
     u_Sampler2 =  gl.getUniformLocation(gl.program, 'u_Sampler2');
     u_Sampler3 =  gl.getUniformLocation(gl.program, 'u_Sampler3');
+    u_Sampler4 =  gl.getUniformLocation(gl.program, 'u_Sampler4');
+
+    u_texColorWeight = gl.getUniformLocation(gl.program, 'u_texColorWeight');
   
   
     // Get the storage location of u_whichTexture
@@ -603,13 +640,15 @@ function renderScene() {
   sky.color = [1,0,0, 1];
   sky.textureNum =0;
   sky.matrix.scale(50, 50, 50);
-  sky.matrix.translate(-0.5, -0.5, -0.5);
+  sky.matrix.translate(-0.5, -0.021, -0.5);
+  gl.uniform1f(u_texColorWeight, 0.0);
+  gl.uniform4f(u_FragColor, 0.3, 0.6, 1.0, 1.0);
   sky.render();
 
   // Draw Tuna
   if (g_tunaPos) {
     var tuna = new Cube();
-    // tuna.textureNum = -5; // Or a specific tuna texture
+    tuna.textureNum = 4;
     tuna.color = [1, 0.5, 0, 1];
     tuna.matrix.translate(g_tunaPos.x - 16, -0.8, g_tunaPos.z - 16);
     tuna.matrix.scale(0.2, 0.1, 0.2);
@@ -640,6 +679,7 @@ function renderScene() {
     var leg = new Cube();
     leg.color = [0, 0, 0, 1];
     leg.textureNum = 6;
+    leg.matrix = new Matrix4(catBaseMat);
     leg.matrix.translate(x, y, z);
     if(g_isWalking) {
       leg.matrix.translate(0.08, 0.8, 0, 1);
@@ -682,11 +722,12 @@ function renderScene() {
 
   // Draw a neck
   var neck = new Cube();
+  neck.matrix = new Matrix4(catBaseMat);
   neck.color = [0.996, 0.894, 0.565, 1.0];
   if(g_isWalking ) {
-    neck.matrix.setTranslate(0, -0.55, -0.4);
+    neck.matrix.translate(0, -0.55, -0.4);
   } else {
-    neck.matrix.setTranslate(0, -0.5, 0.0);
+    neck.matrix.translate(0, -0.5, 0.0);
   }
   neck.matrix.rotate(-5, 1, 0, 0);
   neck.matrix.rotate(-g_yellowAngle, 0, 0, 1);
@@ -722,6 +763,7 @@ function renderScene() {
 
   // mid body
   var mid = new Sphere();
+  mid.matrix = new Matrix4(catBaseMat);
   mid.color = [0, 0, 0, 0.93]; 
   if(!g_isWalking) {
     mid.matrix.translate(0, -0.32, -0.025);
@@ -739,6 +781,7 @@ function renderScene() {
   // Cat head
   var head = new Sphere();
   head.color = [0, 0, 0, 1]; 
+  head.matrix = new Matrix4(catBaseMat);
   head.matrix = yellowCoordinatesMat;
   head.matrix.translate(0, 0.65, 0);
   head.matrix.rotate(g_magentaAngle, 0, 0, 1);
