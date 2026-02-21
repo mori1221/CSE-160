@@ -28,6 +28,7 @@ var FSHADER_SOURCE = `
   uniform sampler2D u_Sampler2;
   uniform sampler2D u_Sampler3;
   uniform sampler2D u_Sampler4;
+  uniform sampler2D u_Sampler6;
   uniform int u_whichTexture;
   uniform float u_texColorWeight;
   void main() {
@@ -48,6 +49,8 @@ var FSHADER_SOURCE = `
       gl_FragColor = texture2D(u_Sampler4, v_UV);
     } else if (u_whichTexture == 5) {
       gl_FragColor = mix(u_FragColor, texColor, u_texColorWeight);
+    } else if (u_whichTexture == 6) {
+      gl_FragColor = texture2D(u_Sampler6, v_UV);
     } else {
       gl_FragColor = vec4(1, 0.2, 0.2, 1); //error
     }
@@ -69,11 +72,14 @@ let u_GlobalRotateMatrix;
 let u_ViewMatrix;
 let u_ProjectionMatrix;
 let u_texColorWeight;
+let g_userBlocks = [];
 let u_Sampler0;
 let u_Sampler1;
 let u_Sampler2;
 let u_Sampler3;
 let u_Sampler4;
+let u_Sampler6;
+let g_catRotation = 0;
 let u_whichTexture;
 let g_selectedColor = [0,0,0,1.0];
 let g_selectedSize = 5;
@@ -174,6 +180,12 @@ function initTextures() {
   var image4 = new Image();
   image4.onload = function(){ sendImageToTEXTTURE4(image4); };
   image4.src = 'images/fish.jpg';
+
+  // Ice
+  var image5 = new Image();
+  image5.onload = function(){ sendImageToTEXTTURE5(image5); };
+  image5.src = 'images/ice.png';
+
 
   return true;
 }
@@ -282,6 +294,26 @@ function sendImageToTEXTTURE4(image) {
   gl.uniform1i(u_Sampler4, 4);
 }
 
+function sendImageToTEXTTURE5(image) {
+   // Create a texture object
+   var texture = gl.createTexture();
+   if(!texture) {
+     console.log('Failed to create texture');
+     return false;
+   }
+   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
+   // Enable the texture unit 0
+   gl.activeTexture(gl.TEXTURE6);
+   // Bind the texture object to the target
+   gl.bindTexture(gl.TEXTURE_2D, texture);
+   // Set the texture parameters
+   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+   // Set the texture image
+   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+   // Set the texture unit 0 to the sampler
+   gl.uniform1i(u_Sampler6, 6);
+}
+
 function tick() {
   g_seconds = performance.now()/1000.0-g_startTime;
 
@@ -297,6 +329,7 @@ function tick() {
 
     if (distance > 0.1) {
         // Move toward tuna
+        g_catRotation = Math.atan2(dx, dz) * (180 / Math.PI);
         g_catPos.x += (dx / distance) * g_catSpeed;
         g_catPos.z += (dz / distance) * g_catSpeed;
         g_isWalking = true;
@@ -400,6 +433,7 @@ function connectVariableToGLSL() {
     u_Sampler2 =  gl.getUniformLocation(gl.program, 'u_Sampler2');
     u_Sampler3 =  gl.getUniformLocation(gl.program, 'u_Sampler3');
     u_Sampler4 =  gl.getUniformLocation(gl.program, 'u_Sampler4');
+    u_Sampler6 =  gl.getUniformLocation(gl.program, 'u_Sampler6');
 
     u_texColorWeight = gl.getUniformLocation(gl.program, 'u_texColorWeight');
   
@@ -539,7 +573,7 @@ function renderScene() {
 
   // Pass the projection matrix
   var projMat = new Matrix4();
-  projMat.setPerspective(40, 1*canvas.width/canvas.height, 1,100);
+  projMat.setPerspective(70, 1*canvas.width/canvas.height, 1,100);
   gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements);
 
   // Pass the view matrix 
@@ -565,6 +599,7 @@ function renderScene() {
 
   // Draw Map
   drawMap();
+  drawUserBlocks();
 
   // Draw the floor
   var body = new Cube();
@@ -658,6 +693,7 @@ function renderScene() {
   //---------------------- CAT -------------------------------//
   var catBaseMat = new Matrix4();
   catBaseMat.translate(g_catPos.x, 0, g_catPos.z);
+  catBaseMat.rotate(g_catRotation+180, 0, 1, 0);
   // Draw the cat body cube
   var body = new Sphere();
   body.color = [0, 0, 0.0, 1];
@@ -678,7 +714,7 @@ function renderScene() {
   function drawLeg(x, y, z, swing) {
     var leg = new Cube();
     leg.color = [0, 0, 0, 1];
-    leg.textureNum = 6;
+    leg.textureNum = -2;
     leg.matrix = new Matrix4(catBaseMat);
     leg.matrix.translate(x, y, z);
     if(g_isWalking) {
@@ -1028,6 +1064,33 @@ function keydown(ev) {
     }
   }
 
+  if (ev.code === 'Space') {
+    // Direction = At - Eye
+    let dx = g_camera.at.elements[0] - g_camera.eye.elements[0];
+    let dz = g_camera.at.elements[2] - g_camera.eye.elements[2];
+    
+    // Normalize and pick a distance (e.g., 2 units in front)
+    let mag = Math.sqrt(dx*dx + dz*dz);
+    let nx = (dx/mag) * 2;
+    let nz = (dz/mag) * 2;
+
+    let blockX = Math.round(g_camera.eye.elements[0] + nx);
+    let blockZ = Math.round(g_camera.eye.elements[2] + nz);
+
+    g_userBlocks.push({x: blockX, z: blockZ, y: -0.85}); 
+    console.log("Block placed at:", blockX, blockZ);
+    
+    ev.preventDefault(); // Prevent page from jumping down
+  } 
+
+  if (ev.key === 'j' || ev.key === 'J') {
+    // Remove the most recent block (Last In, First Out)
+    if (g_userBlocks.length > 0) {
+        g_userBlocks.pop();
+        console.log("Block removed");
+    }
+  }
+
   renderScene(); 
 }
 
@@ -1036,6 +1099,16 @@ function handleAddTuna() {
   g_tunaPos = pos;
   g_isWalking = true;
   console.log("Tuna placed at:", pos.x, pos.z);
+}
+
+function drawUserBlocks() {
+  for (let i = 0; i < g_userBlocks.length; i++) {
+    let b = g_userBlocks[i];
+    let cube = new Cube();
+    cube.textureNum = 6;
+    cube.matrix.translate(b.x, b.y, b.z);
+    cube.render();
+  }
 }
 
 function saveWorld() {
