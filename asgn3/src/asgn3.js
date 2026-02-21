@@ -676,21 +676,30 @@ function renderScene() {
   sky.textureNum =0;
   sky.matrix.scale(50, 50, 50);
   sky.matrix.translate(-0.5, -0.021, -0.5);
-  gl.uniform1f(u_texColorWeight, 0.0);
-  gl.uniform4f(u_FragColor, 0.3, 0.6, 1.0, 1.0);
+  // Transition from Day (Blue) to Sunset (Orange) to Night (Dark Purple)
+  let dayCycle = Math.sin(g_seconds * 0.5); 
+  let r = 0.3 + (0.4 * dayCycle); 
+  let g = 0.5 + (0.2 * dayCycle);
+  let b = 0.9 * Math.max(0.2, dayCycle);
+  gl.uniform1f(u_texColorWeight, 0.5);
+  gl.uniform4f(u_FragColor, r, g, b, 1.0);
   sky.render();
 
   // Draw Tuna
   if (g_tunaPos) {
     var tuna = new Cube();
     tuna.textureNum = 4;
-    tuna.color = [1, 0.5, 0, 1];
-    tuna.matrix.translate(g_tunaPos.x - 16, -0.8, g_tunaPos.z - 16);
+    let bounce = Math.sin(g_seconds * 5) * 0.1;
+    tuna.matrix.translate(g_tunaPos.x - 16, -0.7 + bounce, g_tunaPos.z - 16);
+    tuna.matrix.rotate(g_seconds * 100, 0, 1, 0); // Spin!
     tuna.matrix.scale(0.2, 0.1, 0.2);
+    gl.uniform1f(u_texColorWeight, 0.5);
+    gl.uniform4f(u_FragColor, 1, 1, 0.5, 1);
     tuna.render();
   }
 
   //---------------------- CAT -------------------------------//
+  let pulse = Math.abs(Math.sin(g_seconds * 10)); // Creates a flashing value 0.0 to 1.0
   var catBaseMat = new Matrix4();
   catBaseMat.translate(g_catPos.x, 0, g_catPos.z);
   catBaseMat.rotate(g_catRotation+180, 0, 1, 0);
@@ -703,10 +712,14 @@ function renderScene() {
     body.matrix.translate(0, -0.55, 0.1);
     body.matrix.rotate(-10,1,0,0);
     body.matrix.scale(0.18, 0.45, 0.2);
+    gl.uniform1f(u_texColorWeight, 0.0);
   } else {
     body.matrix.translate(0, -0.19, 0.05);
     body.matrix.rotate(270, 1, 0, 0);
     body.matrix.scale(0.15, 0.45, 0.18);
+    // Make the cat glow gold when it's running!
+    gl.uniform1f(u_texColorWeight, pulse); 
+    gl.uniform4f(u_FragColor, 1.0, 0.84, 0.0, 1.0);
   }
   body.render();
   
