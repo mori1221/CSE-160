@@ -169,6 +169,7 @@ let g_catSpeed = 0.02;
 let g_normalOn = false;
 let g_lightOn = true;
 let g_lightPos = [0, 1, 1];
+var g_catHouse;
 
 function main() {
   
@@ -178,6 +179,8 @@ function main() {
   connectVariableToGLSL();
   // Set up actions for HTML and UI
   addActionsForHtmlUI();
+
+  // g_catHouse = new Model('cat-house.json');
 
   document.onkeydown = keydown;
 
