@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Change a point color</title>
+  </head>
+
+  <body onload="main()">
+    <div class="container" style="display: flex; align-items: flex-start; gap: 20px;">
+      <div class="left"> 
+        <canvas id="webgl" width="700" height="500">
+        Please use a browser that supports "canvas"
+        </canvas>
+        <p id="numdot"> XXX </p>
+
+        <!-- Buttons -->
+        <div class="animation-buttons">
+          <button type="button" id="normalOn">Normal On</button>
+          <button type="button" id="normalOff">Normal Off</button>
+          <button type="button" id="lightOn">Light On</button>
+          <button type="button" id="lightOff">Light Off</button>
+          Light X <input type="range" min="-250" max="250" value="0" id="lightSlideX">
+          Light Y <input type="range" min="-250" max="250" value="100" id="lightSlideY">
+          Light Z <input type="range" min="-250" max="250" value="-200" id="lightSlideZ">
+          <p>
+          L-Red <input type="range" min="0" max="100" value="100" id="lightR">
+          L-Green <input type="range" min="0" max="100" value="0" id="lightG">
+          L-Blue <input type="range" min="0" max="100" value="0" id="lightB">
+          <h3>Animation:</h3>
+          <span>Head:</span>
+          <button type="button" id="on">ON</button>
+          <button type="button" id="off">OFF</button>
+          <span>Body:</span>
+          <button type="button" id="mOn">ON</button>
+          <button type="button" id="mOff">OFF</button>
+          <span>Tail:</span>
+          <button type="button" id="tOn">ON</button>
+          <button type="button" id="tOff">OFF</button>
+        </div>
+        <div class="game-controls">
+          <h3>Cat Game:</h3>
+          <button type="button" id="addTuna">Add Tuna</button>
+          <button type="button" id="deleteTuna">Clear Tuna </button>
+        </div>
+        <!-- Sliders -->
+        <div class="sliders">
+          <p>
+          Head <input type="range" min="-45" max="45" value="0" id="magentaSlide">
+          Body <input type="range" min="-10" max="10" value="0" id="yellowSlide">
+          Tail <input type="range" min="-1" max="1" value="0" id="tailSlide">
+          Camera Angle <input type="range" min="0" max="360" value="5" id="angleSlide">
+          Ear Control <input type="range" min="-10" max="60" value="0" id="earSlide">
+        </div>
+
+        <script src="../lib/webgl-utils.js"></script>
+        <script src="../lib/webgl-debug.js"></script>
+        <script src="../lib/cuon-utils.js"></script>
+        <script src="../lib/cuon-matrix.js"></script>
+        <script src="Point.js"></script>
+        <script src="Triangle.js"></script>
+        <script src="Circle.js"></script>
+        <script src="Cube.js"></script>
+        <script src="Cone.js"></script>
+        <script src="Camera.js"></script>
+        <script src="asgn4.js"></script>
+        <script src="Sphere.js"></script>
+      </div>
+
+      <div class="right" style="margin-left: 20px;">
+        <h2>Jialai Li</h2>
+        <h2>jli827@ucsc.edu</h2>
+        <h2>Note to Grader</h2>
+        <h4>Dear Grader,  </h4>
+        <h4>This is a story about a cat that is confined in a dilapidated house, waiting alone for its owner. The cat loves Tuna! Placing a tuna block by "Add Tuna" triggers a state change where the cat performs a walking animation and physically moves toward the target grid coordinate. Click "Clear Tuna" to stop feeding action. Press "Space" to create ice block, press key J to remove the ice block. Also, my sky block is actually outside the room, so please press "W" or "S" to move out of the room for seeing normalOn that applying on sky. Use L-Red, L-Green, and L-Blue to adjust light colors.</h4>
+      </div>
+    </div>
+  </body>
+</html>
