@@ -16,7 +16,7 @@ class Sphere {
     // Calculate the normal transformation matrix
     gl.uniformMatrix4fv(u_NormalMatrix, false, this.normalMatrix.elements);
 
-    var d = 15; // Step size in degrees
+    var d = 30; // Step size in degrees
     for (var t = 0; t < 180; t += d) {
       for (var r = 0; r < 360; r += d) {
         // Convert polar coordinates (t=latitude, r=longitude) to Cartesian (x,y,z)
