@@ -1,6 +1,7 @@
 // prettier-ignore
 class Model {
     constructor(gl, filePath) {
+        this.gl = gl;
         this.filePath = filePath;
         this.color = [1,1,1,1];
         this.matrix = new Matrix4();
@@ -8,6 +9,7 @@ class Model {
         this.getFileContent().then(() => {
             this.vertexBuffer = gl.createBuffer();
             this.normalBuffer = gl.createBuffer();
+            this.isFullyLoaded = true;
             if(!this.vertexBuffer || !this.normalBuffer){
                 console.log('Failed to create buffer for', this.filePath);
                 return;
@@ -25,7 +27,8 @@ class Model {
         //console.log(lines);
         for (let i = 0; i<lines.length; i++){
             const line = lines[i];
-            const tokens = line.split(" ");
+            if (!line || line.startsWith('#')) continue;
+            const tokens = line.split(/\s+/);
             if(tokens[0] == 'v'){
                 allVertices.push(parseFloat(tokens[1]), parseFloat(tokens[2]), parseFloat(tokens[3]));
               
@@ -33,73 +36,105 @@ class Model {
             } else if (tokens[0] == 'vn') {
                 allNormals.push(parseFloat(tokens[1]), parseFloat(tokens[2]), parseFloat(tokens[3]));
             } else if (tokens[0] == 'f') {
-                for (const face of [tokens[1], tokens[2], tokens[3]]) {
-                    const indices = face.split("//");
-                    const vertexIndex = (parseInt(indices[0]) -1)*3;
-                    const normalIndex = (parseInt(indices[1]) -1)*3;
-
-                    unpackedVerts.push(
-                        allVertices[vertexIndex],
-                        allVertices[vertexIndex+1],
-                        allVertices[vertexIndex+2]
-                    )
-                    unpackedNormals.push(
-                        allNormals[normalIndex],
-                        allNormals[normalIndex+1],
-                        allNormals[normalIndex+2]
-                    )
-                }
-                // for (const face of tokens.slice(1, 4)) { // Safely get 3 tokens
-                //     const indices = face.split("/");
-                //     const vIdx = (parseInt(indices[0]) - 1) * 3;
-                //     // If there are 3 parts (v/vt/vn), normals are at index 2. 
-                //     // If 2 parts (v//vn), normals are at index 2 (split results in empty string at [1]).
-                //     const nIdx = (parseInt(indices[indices.length - 1]) - 1) * 3;
+                for (let i = 1; i < tokens.length; i++) {
+                    if (!tokens[i]) continue;
+                    
+                    const indices = tokens[i].split("/");
+                    
+                    // Vertex index is always first
+                    const vIdx = (parseInt(indices[0]) - 1) * 3;
+                    
+                    // Normal index is always last (works for v//vn and v/vt/vn)
+                    const nIdx = (parseInt(indices[indices.length - 1]) - 1) * 3;
             
-                //     unpackedVerts.push(allVertices[vIdx], allVertices[vIdx+1], allVertices[vIdx+2]);
-                //     unpackedNormals.push(allNormals[nIdx], allNormals[nIdx+1], allNormals[nIdx+2]);
+                    if (!isNaN(vIdx)) {
+                        unpackedVerts.push(allVertices[vIdx], allVertices[vIdx+1], allVertices[vIdx+2]);
+                    }
+                    if (!isNaN(nIdx)) {
+                        unpackedNormals.push(allNormals[nIdx], allNormals[nIdx+1], allNormals[nIdx+2]);
+                    }
+                }
+                
+                // for (const face of [tokens[1], tokens[2], tokens[3]]) {
+                //     const indices = face.split("//");
+                //     const vertexIndex = (parseInt(indices[0]) -1)*3;
+                //     const normalIndex = (parseInt(indices[1]) -1)*3;
+
+                //     unpackedVerts.push(
+                //         allVertices[vertexIndex],
+                //         allVertices[vertexIndex+1],
+                //         allVertices[vertexIndex+2]
+                //     )
+                //     unpackedNormals.push(
+                //         allNormals[normalIndex],
+                //         allNormals[normalIndex+1],
+                //         allNormals[normalIndex+2]
+                //     )
                 // }
-
-
             }
+        }
+
+        let minX = Infinity, minY = Infinity, minZ = Infinity;
+        let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+        for (let i = 0; i < unpackedVerts.length; i += 3) {
+            minX = Math.min(minX, unpackedVerts[i]); maxX = Math.max(maxX, unpackedVerts[i]);
+            minY = Math.min(minY, unpackedVerts[i+1]); maxY = Math.max(maxY, unpackedVerts[i+1]);
+            minZ = Math.min(minZ, unpackedVerts[i+2]); maxZ = Math.max(maxZ, unpackedVerts[i+2]);
+        }
+        let midX = (minX + maxX) / 2, midY = (minY + maxY) / 2, midZ = (minZ + maxZ) / 2;
+        let range = Math.max(maxX - minX, maxY - minY, maxZ - minZ);
+        for (let i = 0; i < unpackedVerts.length; i += 3) {
+            unpackedVerts[i] = (unpackedVerts[i] - midX) / range;
+            unpackedVerts[i+1] = (unpackedVerts[i+1] - midY) / range;
+            unpackedVerts[i+2] = (unpackedVerts[i+2] - midZ) / range;
         }
         this.modelData = {
             vertices: new Float32Array(unpackedVerts),
             normals: new Float32Array(unpackedNormals)
         };
         this.isFullyLoaded = true;
-        // console.log('all Vertices', allVertices);
-        // console.log('all Normals', allNormals);  
     }
 
-    render(gl, program) {
-        if(!this.isFullyLoaded) {
-            return;
+    render() {
+        if (!this.isFullyLoaded || !this.modelData || !this.modelData.vertices) {
+            return; 
         }
 
         //vertices
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, this.modelData.vertices, gl.DYNAMIC_DRAW);
-        gl.vertexAttribPointer(program.a_Position, 3, gl.FLOAT, false, 0 , 0);
-        gl.enableVertexAttribArray(program.a_Position);
+        gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0 , 0);
+        gl.enableVertexAttribArray(a_Position);
         
         //normals
         gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, this.modelData.normals, gl.DYNAMIC_DRAW);
-        gl.vertexAttribPointer(program.a_Normal, 3, gl.FLOAT, false, 0 , 0);
-        gl.enableVertexAttribArray(program.a_Normal);
+        gl.vertexAttribPointer(a_Normal, 3, gl.FLOAT, false, 0 , 0);
+        gl.enableVertexAttribArray(a_Normal);
 
         // set uniform
-        gl.uniformMatrix4fv(program.u_ModelMatrix, false, this.matrix.elements);
-        gl.uniform4fv(program.u_FragColor, this.color);
+        gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
+        gl.uniform4fv(u_FragColor, this.color);
+        gl.uniform1i(u_whichTexture, -2);
         
 
         //normal Matrix
-        let normalMatrix = new Matrix4().setInverseOf(this.matrix);
+        let normalMatrix = new Matrix4();
+        if (typeof g_globalRotateMatrix !== 'undefined') {
+            normalMatrix.set(g_globalRotateMatrix);
+        }
+        if (typeof a_UV !== 'undefined' && a_UV >= 0) {
+            gl.disableVertexAttribArray(a_UV); 
+        }
+        normalMatrix.multiply(this.matrix);
+        normalMatrix.setInverseOf(normalMatrix);
         normalMatrix.transpose();
-        gl.uniformMatrix4fv(program.u_NormalMatrix, false, normalMatrix.elements);
-        
+        gl.uniformMatrix4fv(u_NormalMatrix, false, normalMatrix.elements);
 
+        // let normalMatrix = new Matrix4().setInverseOf(this.matrix);
+        // normalMatrix.transpose();
+        // gl.uniformMatrix4fv(u_NormalMatrix, false, normalMatrix.elements);
+        gl.uniform1f(u_texColorWeight, 0.0);        
         gl.drawArrays(gl.TRIANGLES, 0, this.modelData.vertices.length /3);
         
     }

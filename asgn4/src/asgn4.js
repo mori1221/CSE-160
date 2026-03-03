@@ -180,7 +180,7 @@ function main() {
   // Set up actions for HTML and UI
   addActionsForHtmlUI();
 
-  // g_catHouse = new Model('cat-house.json');
+  g_catHouse = new Model(gl,'obj/cat_house.obj');
 
   document.onkeydown = keydown;
 
@@ -808,13 +808,23 @@ function renderScene() {
   ball.matrix.translate(0.9, 0.1, 0);
   ball.matrix.scale(0.4, 0.4, 0.4);
   ball.render();
-  
+
+  // Draw the cat house
+  if (g_catHouse && g_catHouse.isFullyLoaded) {
+    var modelMat = new Matrix4();
+    modelMat.setTranslate(-1.0, 0, 0.0);
+    modelMat.scale(2, 2, 2); 
+    g_catHouse.matrix = modelMat;
+    g_catHouse.color = [0.6, 0.4, 0.2, 1.0];
+    g_catHouse.render();
+  }
 
   //---------------------- CAT -------------------------------//
   let pulse = Math.abs(Math.sin(g_seconds * 10)); // Creates a flashing value 0.0 to 1.0
   var catBaseMat = new Matrix4();
   catBaseMat.translate(g_catPos.x, 0, g_catPos.z);
   catBaseMat.rotate(g_catRotation+180, 0, 1, 0);
+
   // Draw the cat body cube
   var body = new Sphere();
   body.color = [0, 0, 0.0, 1];
