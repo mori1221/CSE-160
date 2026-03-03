@@ -70,8 +70,8 @@ function drawTriangle(vertices) {
     // gl.drawArrays(gl.POINTS, 0, n);
 }
 
-function drawTriangle3D(vertices) {
-  var n = vertices.length/3; // The number of vertices
+function drawTriangle3D(vertices, normals) {
+  var n = 3; // The number of vertices
 
   // Create a buffer object
   var vertexBuffer = gl.createBuffer();
@@ -91,6 +91,15 @@ function drawTriangle3D(vertices) {
   // Enable the assignment to a_Position variable
   gl.enableVertexAttribArray(a_Position);
   // gl.disableVertexAttribArray(a_UV);
+
+
+  if (normals) {
+    var normalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.DYNAMIC_DRAW);
+    gl.vertexAttribPointer(a_Normal, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(a_Normal);
+  }
 
   gl.drawArrays(gl.TRIANGLES, 0, n);
 }
