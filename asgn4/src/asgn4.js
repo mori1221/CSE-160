@@ -41,6 +41,7 @@ var FSHADER_SOURCE = `
   uniform sampler2D u_Sampler3;
   uniform sampler2D u_Sampler4;
   uniform sampler2D u_Sampler6;
+  uniform sampler2D u_Sampler7;
   uniform int u_whichTexture;
   uniform float u_texColorWeight;
   uniform vec3 u_lightPos;
@@ -69,6 +70,8 @@ var FSHADER_SOURCE = `
       gl_FragColor = mix(u_FragColor, texColor, u_texColorWeight);
     } else if (u_whichTexture == 6) {
       gl_FragColor = texture2D(u_Sampler6, v_UV);
+    } else if (u_whichTexture == 7) {
+      gl_FragColor = texture2D(u_Sampler7, v_UV);
     } else {
       gl_FragColor = vec4(1, 0.2, 0.2, 1); //error
     }
@@ -138,6 +141,7 @@ let u_Sampler2;
 let u_Sampler3;
 let u_Sampler4;
 let u_Sampler6;
+let u_Sampler7;
 let g_catRotation = 0;
 let u_whichTexture;
 let u_cameraPos;
@@ -241,6 +245,11 @@ function initTextures() {
   var image5 = new Image();
   image5.onload = function(){ sendImageToTEXTTURE5(image5); };
   image5.src = 'images/ice.png';
+
+  // Cat House
+  var image7 = new Image();
+  image7.onload = function(){ sendImageToTEXTTURE7(image7); };
+  image7.src = 'images/CatHouse.png';
 
 
   return true;
@@ -368,6 +377,26 @@ function sendImageToTEXTTURE5(image) {
    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
    // Set the texture unit 0 to the sampler
    gl.uniform1i(u_Sampler6, 6);
+}
+
+function sendImageToTEXTTURE7(image) {
+  // Create a texture object
+  var texture = gl.createTexture();
+  if(!texture) {
+    console.log('Failed to create texture');
+    return false;
+  }
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
+  // Enable the texture unit 0
+  gl.activeTexture(gl.TEXTURE7);
+  // Bind the texture object to the target
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  // Set the texture parameters
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  // Set the texture image
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+  // Set the texture unit 0 to the sampler
+  gl.uniform1i(u_Sampler7, 7);
 }
 
 function tick() {
@@ -515,6 +544,7 @@ function connectVariableToGLSL() {
     u_Sampler3 =  gl.getUniformLocation(gl.program, 'u_Sampler3');
     u_Sampler4 =  gl.getUniformLocation(gl.program, 'u_Sampler4');
     u_Sampler6 =  gl.getUniformLocation(gl.program, 'u_Sampler6');
+    u_Sampler7 =  gl.getUniformLocation(gl.program, 'u_Sampler7');
 
     u_texColorWeight = gl.getUniformLocation(gl.program, 'u_texColorWeight');
   
@@ -816,6 +846,7 @@ function renderScene() {
     modelMat.scale(2, 2, 2); 
     g_catHouse.matrix = modelMat;
     g_catHouse.color = [0.6, 0.4, 0.2, 1.0];
+    g_catHouse.textureNum = 7;
     g_catHouse.render();
   }
 

@@ -6,11 +6,13 @@ class Model {
         this.color = [1,1,1,1];
         this.matrix = new Matrix4();
         this.isFullyLoaded= false;
+        this.textureNum = 7;
         this.getFileContent().then(() => {
             this.vertexBuffer = gl.createBuffer();
             this.normalBuffer = gl.createBuffer();
+            this.uvBuffer = gl.createBuffer();
             this.isFullyLoaded = true;
-            if(!this.vertexBuffer || !this.normalBuffer){
+            if(!this.vertexBuffer || !this.normalBuffer || !this.uvBuffer) {
                 console.log('Failed to create buffer for', this.filePath);
                 return;
             }
@@ -24,6 +26,8 @@ class Model {
         const allNormals = [];
         const unpackedVerts = [];
         const unpackedNormals = [];
+        const unpackedUVs = [];
+        const allUVs = [];
         //console.log(lines);
         for (let i = 0; i<lines.length; i++){
             const line = lines[i];
@@ -35,6 +39,8 @@ class Model {
               // console.log(line);
             } else if (tokens[0] == 'vn') {
                 allNormals.push(parseFloat(tokens[1]), parseFloat(tokens[2]), parseFloat(tokens[3]));
+            }else if (tokens[0] == 'vt') {
+                allUVs.push(parseFloat(tokens[1]), parseFloat(tokens[2]));
             } else if (tokens[0] == 'f') {
                 for (let i = 1; i < tokens.length; i++) {
                     if (!tokens[i]) continue;
@@ -43,6 +49,15 @@ class Model {
                     
                     // Vertex index is always first
                     const vIdx = (parseInt(indices[0]) - 1) * 3;
+
+                    // Find uvs
+                    if (indices[1]) {
+                        const uvIdx = (parseInt(indices[1]) - 1) * 2;
+                        unpackedUVs.push(allUVs[uvIdx], allUVs[uvIdx+1]);
+                    } else {
+                        // Fallback if no UVs exist in the file
+                        unpackedUVs.push(0, 0);
+                    }
                     
                     // Normal index is always last (works for v//vn and v/vt/vn)
                     const nIdx = (parseInt(indices[indices.length - 1]) - 1) * 3;
@@ -53,6 +68,7 @@ class Model {
                     if (!isNaN(nIdx)) {
                         unpackedNormals.push(allNormals[nIdx], allNormals[nIdx+1], allNormals[nIdx+2]);
                     }
+                    
                 }
                 
                 // for (const face of [tokens[1], tokens[2], tokens[3]]) {
@@ -90,7 +106,8 @@ class Model {
         }
         this.modelData = {
             vertices: new Float32Array(unpackedVerts),
-            normals: new Float32Array(unpackedNormals)
+            normals: new Float32Array(unpackedNormals),
+            uvs: new Float32Array(unpackedUVs)
         };
         this.isFullyLoaded = true;
     }
@@ -105,6 +122,12 @@ class Model {
         gl.bufferData(gl.ARRAY_BUFFER, this.modelData.vertices, gl.DYNAMIC_DRAW);
         gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0 , 0);
         gl.enableVertexAttribArray(a_Position);
+
+        //uvs
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, this.modelData.uvs, gl.DYNAMIC_DRAW);
+        gl.vertexAttribPointer(a_UV, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_UV);
         
         //normals
         gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
@@ -115,7 +138,8 @@ class Model {
         // set uniform
         gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
         gl.uniform4fv(u_FragColor, this.color);
-        gl.uniform1i(u_whichTexture, -2);
+        gl.uniform1i(u_whichTexture, this.textureNum);
+        gl.uniform1f(u_texColorWeight, 0.0);
         
 
         //normal Matrix
