@@ -880,7 +880,7 @@ function renderScene() {
   gl.uniform1f(u_spotOn, 1);
   gl.uniform3f(u_lightPos, roofLightPos[0], roofLightPos[1], roofLightPos[2]);
   gl.uniform3f(u_spotDirection, 0.0, -1.0, 0.0);
-  gl.uniform3f(u_lightColor, 1.0, 1.0, 0.5);
+  gl.uniform3f(u_lightColor, g_lightColor[0], g_lightColor[1], g_lightColor[2]);
   gl.uniform1i(u_lightOn, 0);
   var roofLight = new Cube();
   roofLight.color = [1, 1, 0, 1];
