@@ -47,7 +47,9 @@ var FSHADER_SOURCE = `
   uniform vec3 u_lightPos;
   uniform float u_specularOn;
   uniform bool u_lightOn;
+  uniform bool u_spotOn;
   uniform vec3 u_lightColor;
+  uniform vec3 u_spotDirection;
   void main() {
     vec4 texColor = vec4(1.0);
     if (u_whichTexture == -3) {
@@ -92,6 +94,17 @@ var FSHADER_SOURCE = `
     vec3 N = normalize(v_Normal);
     float nDotL = max(dot(N, L), 0.0);
     gl_FragColor.a = 1.0;
+    float spotFactor = 1.0;
+
+    // Spotlight
+    if (u_spotOn) {
+      float cosAngle = dot(L, normalize(-u_spotDirection)); 
+      if (cosAngle < 0.95) {
+        spotFactor = 0.0;
+      } else {
+        spotFactor = pow(cosAngle, 10.0);
+      }
+    }
 
     // Reflection
     vec3 R = reflect(-L, N);
@@ -101,11 +114,12 @@ var FSHADER_SOURCE = `
 
     // Specular
     float specular = pow(max(dot(R, E), 0.0), 60.0) * u_specularOn;
-    vec3 specularColor = specular * u_lightColor;
+    vec3 specularColor = specular * u_lightColor * spotFactor;
 
-    vec3 diffuse = vec3(gl_FragColor) * u_lightColor * nDotL *0.7; // Diffuse light
+    vec3 diffuse = vec3(gl_FragColor) * u_lightColor * nDotL * 0.7 * spotFactor; // Diffuse light
     vec3 ambient = vec3(gl_FragColor) * u_lightColor * 0.3; // Ambient light
     //vec3 specular = vec3(1.0) * pow(max(dot(reflect(-L, N), normalize(-v_VertPos.xyz)), 0.0), 16.0); // Specular highlight
+    
     if (u_lightOn) {
       gl_FragColor = vec4(diffuse + ambient + specularColor, gl_FragColor.a);
       // if(u_whichTexture == 0) {
@@ -134,6 +148,7 @@ let u_NormalMatrix;
 let u_ViewMatrix;
 let u_ProjectionMatrix;
 let u_texColorWeight;
+let u_spotDirection;
 let g_userBlocks = [];
 let u_Sampler0;
 let u_Sampler1;
@@ -147,6 +162,7 @@ let u_whichTexture;
 let u_cameraPos;
 let u_specularOn;
 let u_lightOn;
+let u_spotOn;
 let u_lightColor;
 let g_lightColor = [1, 1, 1];
 let g_selectedColor = [0,0,0,1.0];
@@ -173,6 +189,7 @@ let g_catSpeed = 0.02;
 let g_normalOn = false;
 let g_lightOn = true;
 let g_lightPos = [0, 1, 1];
+let roofLightPos = [0, 2.0, -0.1];
 var g_catHouse;
 
 function main() {
@@ -496,11 +513,17 @@ function connectVariableToGLSL() {
     // Get the storage location of u_lightOn
     u_lightOn = gl.getUniformLocation(gl.program, 'u_lightOn');
 
+    // Get the storage location of u_spotOn
+    u_spotOn = gl.getUniformLocation(gl.program, 'u_spotOn');
+
     // Get the storage location of u_lightColor
     u_lightColor = gl.getUniformLocation(gl.program, 'u_lightColor');
 
     // Get the storage location of u_NormalMatrix
     u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
+
+    // Get the storage location of u_spotDirection
+    u_spotDirection = gl.getUniformLocation(gl.program, 'u_spotDirection');
 
     // Get the storage location of u_ModelMatrix
     u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
@@ -632,6 +655,7 @@ function updateAnimationAngles() {
     g_tailAngle = g_seconds;
   }
   g_lightPos[0] = Math.cos(g_seconds) * 2;
+  roofLightPos[2] = Math.cos(g_seconds) *0.5;
 }
 
 var g_eye = [0, 0, 3];
@@ -818,6 +842,7 @@ function renderScene() {
   
   // Draw the Light
   gl.uniform1f(u_specularOn, 1.0);
+  gl.uniform1i(u_spotOn, 0);
   gl.uniform3f(u_lightPos, g_lightPos[0], g_lightPos[1], g_lightPos[2]);
   gl.uniform3f(u_cameraPos, g_camera.eye.elements[0], g_camera.eye.elements[1], g_camera.eye.elements[2]);
   gl.uniform1f(u_lightOn, g_lightOn);
@@ -828,6 +853,7 @@ function renderScene() {
   light.matrix.scale(-0.1, -0.1, -0.1);
   light.matrix.translate(-0.5, -0.5, -0.5);
   light.render();
+
 
   // Draw the light Sphere
   var ball = new SphereLight();
@@ -849,6 +875,18 @@ function renderScene() {
     g_catHouse.textureNum = 7;
     g_catHouse.render();
   }
+
+  // Rooflight
+  gl.uniform1f(u_spotOn, 1);
+  gl.uniform3f(u_lightPos, roofLightPos[0], roofLightPos[1], roofLightPos[2]);
+  gl.uniform3f(u_spotDirection, 0.0, -1.0, 0.0);
+  gl.uniform3f(u_lightColor, 1.0, 1.0, 0.5);
+  gl.uniform1i(u_lightOn, 0);
+  var roofLight = new Cube();
+  roofLight.color = [1, 1, 0, 1];
+  roofLight.matrix.translate(roofLightPos[0], roofLightPos[1], roofLightPos[2]);
+  roofLight.matrix.scale(0.05, 0.05, 0.05);
+  roofLight.render();
 
   //---------------------- CAT -------------------------------//
   let pulse = Math.abs(Math.sin(g_seconds * 10)); // Creates a flashing value 0.0 to 1.0
@@ -922,6 +960,7 @@ function renderScene() {
     drawLeg(0.01, -0.99, 0.4, g_walkAnim);
   }
 
+
   // Draw a neck
   var neck = new Cube();
   neck.matrix = new Matrix4(catBaseMat);
@@ -965,6 +1004,10 @@ function renderScene() {
   neck.matrix.rotate(-g_yellowAngle, 0, 0, 1);
   rubby2.matrix.scale(0.01, 0.01, 0.01);
   rubby2.render();
+
+  gl.uniform1i(u_lightOn, g_lightOn);
+
+
 
   // mid body
   var mid = new Sphere();
@@ -1096,6 +1139,7 @@ function renderScene() {
     segment.render();
     baseTailMatrix.translate(0, 0, 0.3); 
   }
+
   // var k = 20;
   // for (var i=0; i<k; i++){
   //   var c = new Cube();
@@ -1192,6 +1236,26 @@ function addActionsForHtmlUI() {
   document.getElementById('lightSlideZ').addEventListener('mousemove', function(ev) {
     if(ev.buttons == 1) {
       g_lightPos[2] = this.value/100;
+      renderScene();
+    }
+  });
+
+  // Spotlight Sliders roofLightPos
+  document.getElementById('spotSlideX').addEventListener('mousemove', function(ev) {
+    if(ev.buttons == 1) {
+      roofLightPos[0] = this.value/100;
+      renderScene();
+    }
+  });
+  document.getElementById('spotSlideY').addEventListener('mousemove', function(ev) {
+    if(ev.buttons == 1) {
+      roofLightPos[1] = this.value/100;
+      renderScene();
+    }
+  });
+  document.getElementById('spotSlideZ').addEventListener('mousemove', function(ev) {
+    if(ev.buttons == 1) {
+      roofLightPos[2] = this.value/100;
       renderScene();
     }
   });

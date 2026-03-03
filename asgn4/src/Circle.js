@@ -41,13 +41,13 @@ class Sphere {
         var z4 = Math.cos(t * Math.PI/180);
 
         // Face 1
-        drawTriangle3D([x1, y1, z1,  x2, y2, z2,  x4, y4, z4]);
+        drawTriangle3D([x1, y1, z1,  x2, y2, z2,  x4, y4, z4], [x1, y1, z1,  x2, y2, z2,  x4, y4, z4]);
         // drawTriangle3DUV(
         //   [x1, y1, z1,  x2, y2, z2,  x4, y4, z4], 
         //   [uv1[0], uv1[1], uv2[0], uv2[1], uv4[0], uv4[1]]
         // );
         // Face 2
-        drawTriangle3D([x2, y2, z2,  x3, y3, z3,  x4, y4, z4]);
+        drawTriangle3D([x2, y2, z2,  x3, y3, z3,  x4, y4, z4], [x2, y2, z2,  x3, y3, z3,  x4, y4, z4]);
         // drawTriangle3DUV(
         //   [x2, y2, z2,  x3, y3, z3,  x4, y4, z4], 
         //   [uv2[0], uv2[1], uv3[0], uv3[1], uv4[0], uv4[1]]
