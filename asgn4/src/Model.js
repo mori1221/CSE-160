@@ -6,7 +6,7 @@ class Model {
         this.color = [1,1,1,1];
         this.matrix = new Matrix4();
         this.isFullyLoaded= false;
-        this.textureNum = 7;
+        this.textureNum;
         this.getFileContent().then(() => {
             this.vertexBuffer = gl.createBuffer();
             this.normalBuffer = gl.createBuffer();

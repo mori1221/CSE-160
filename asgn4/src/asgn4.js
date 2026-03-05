@@ -743,6 +743,9 @@ function renderScene() {
   var body = new Cube();
   body.color = [1, 0, 0, 1];
   body.textureNum = 1;
+  if(g_normalOn) {
+    body.textureNum = -3
+  };
   body.matrix.translate(0,-1, 0);
   body.matrix.scale(10,5,15);
   body.matrix.translate(-0.5, 0, -0.5);
@@ -752,6 +755,9 @@ function renderScene() {
   var body = new Cube();
   body.color = [1, 0, 0, 1];
   body.textureNum = 1;
+  if(g_normalOn) {
+    body.textureNum = -3
+  };
   body.matrix.translate(0,-1, 0);
   body.matrix.scale(10,0,10);
   body.matrix.translate(-0.5, 0, -0.5);
@@ -761,6 +767,9 @@ function renderScene() {
   var leftWall = new Cube();
   leftWall.color = [1, 1, 1, 1];
   leftWall.textureNum = 3;
+  if(g_normalOn) {
+    leftWall.textureNum = -3
+  };
   leftWall.matrix.translate(-5, -0.87, 0);
   leftWall.matrix.scale(0.1, 4, 10);       
   leftWall.matrix.translate(-0.5, 0, -0.5);
@@ -769,6 +778,9 @@ function renderScene() {
   var rightWall = new Cube();
   rightWall.color = [1, 1, 1, 1];
   rightWall.textureNum = 3;
+  if(g_normalOn) {
+    rightWall.textureNum = -3
+  };
   rightWall.matrix.translate(5, -0.87, 0);  
   rightWall.matrix.scale(0.1, 4, 10);     
   rightWall.matrix.translate(-0.5, 0, -0.5); 
@@ -778,6 +790,9 @@ function renderScene() {
   var frontWall = new Cube();
   frontWall.color = [1, 1, 1, 1];
   frontWall.textureNum = 3;
+  if(g_normalOn) {
+    frontWall.textureNum = -3
+  };
   frontWall.matrix.translate(0, -0.87, -5); 
   frontWall.matrix.scale(10, 4, 0.1);     
   frontWall.matrix.translate(-0.5, 0, -0.5); 
@@ -785,7 +800,10 @@ function renderScene() {
 
   var door = new Cube();
   door.color = [0.4, 0.2, 0, 1];
-  door.textureNum = -2; 
+  door.textureNum = -2;
+  if(g_normalOn) {
+    door.textureNum = -3
+  };
   door.matrix.translate(0, -0.87, -4.9); 
   door.matrix.scale(1.9, 3, 0.05); 
   door.matrix.translate(-0.5, 0, -0.5); 
@@ -793,7 +811,10 @@ function renderScene() {
 
   var knob = new Cube();
   knob.color = [1, 0.84, 0, 1]; 
-  knob.textureNum = -2;     
+  knob.textureNum = -2;
+  if(g_normalOn) {
+    knob.textureNum = -3
+  };     
   knob.matrix.translate(0.7, 0.5, -4.85); 
   knob.matrix.scale(0.1, 0.1, 0.1); 
   knob.matrix.translate(-0.5, 0, -0.5); 
@@ -803,6 +824,9 @@ function renderScene() {
   var backWall = new Cube();
   backWall.color = [1, 1, 1, 1];
   backWall.textureNum = 3;
+  if(g_normalOn) {
+    backWall.textureNum = -3
+  };
   backWall.matrix.translate(0, -0.87, 5);  
   backWall.matrix.scale(10, 4, 0.1);       
   backWall.matrix.translate(-0.5, 0, -0.5); 
@@ -849,6 +873,9 @@ function renderScene() {
   gl.uniform3f(u_lightColor, g_lightColor[0], g_lightColor[1], g_lightColor[2]);
   var light = new Cube();
   light.color = [2, 2, 0, 1];
+  if(g_normalOn) {
+    light.textureNum = -3
+  };
   light.matrix.translate(g_lightPos[0], g_lightPos[1], g_lightPos[2]);
   light.matrix.scale(-0.1, -0.1, -0.1);
   light.matrix.translate(-0.5, -0.5, -0.5);
@@ -873,6 +900,9 @@ function renderScene() {
     g_catHouse.matrix = modelMat;
     g_catHouse.color = [0.6, 0.4, 0.2, 1.0];
     g_catHouse.textureNum = 7;
+    if(g_normalOn) {
+      g_catHouse.textureNum = -3
+    };
     g_catHouse.render();
   }
 
@@ -884,6 +914,9 @@ function renderScene() {
   gl.uniform1i(u_lightOn, 0);
   var roofLight = new Cube();
   roofLight.color = [1, 1, 0, 1];
+  if(g_normalOn) {
+    roofLight.textureNum = -3
+  };
   roofLight.matrix.translate(roofLightPos[0], roofLightPos[1], roofLightPos[2]);
   roofLight.matrix.scale(0.05, 0.05, 0.05);
   roofLight.render();
@@ -898,6 +931,9 @@ function renderScene() {
   var body = new Sphere();
   body.color = [0, 0, 0.0, 1];
   body.textureNum = -2;
+  if(g_normalOn) {
+    body.textureNum = -3
+  };
   body.matrix = new Matrix4(catBaseMat);
   if(!g_isWalking) {
     body.matrix.translate(0, -0.55, 0.1);
@@ -919,6 +955,9 @@ function renderScene() {
     var leg = new Cube();
     leg.color = [0, 0, 0, 1];
     leg.textureNum = -2;
+    if(g_normalOn) {
+      leg.textureNum = -3
+    };
     leg.matrix = new Matrix4(catBaseMat);
     leg.matrix.translate(x, y, z);
     if(g_isWalking) {
@@ -932,6 +971,9 @@ function renderScene() {
     // gold Stripes - 3 per leg
     for (var s = 0; s < 3; s++) {
       var lStripe = new Cube();
+      if(g_normalOn) {
+        lStripe.textureNum = -3
+      };
       lStripe.color = [1.0, 0.84, 0.0, 1.0];
       lStripe.matrix = new Matrix4(leg.matrix);
       lStripe.matrix.translate(-0.1, 0.15 + (s * 0.3), -0.1); 
@@ -970,6 +1012,9 @@ function renderScene() {
   } else {
     neck.matrix.translate(0, -0.5, 0.0);
   }
+  if(g_normalOn) {
+    neck.textureNum = -3
+  };
   neck.matrix.rotate(-5, 1, 0, 0);
   neck.matrix.rotate(-g_yellowAngle, 0, 0, 1);
   var yellowCoordinatesMat = new Matrix4(neck.matrix);
@@ -982,6 +1027,9 @@ function renderScene() {
 
   // necklace
   var sapphire = new Sphere();
+  if(g_normalOn) {
+    sapphire.textureNum = -3
+  };
   sapphire.color = [0,0,1,1];
   sapphire.matrix = new Matrix4(yellowCoordinatesMat);
   sapphire.matrix.translate(0, 0.5, -0.08);
@@ -991,6 +1039,9 @@ function renderScene() {
   // rubby 1
   var rubby1 = new Sphere();
   rubby1.color = [1,0,0,1];
+  if(g_normalOn) {
+    rubby1.textureNum = -3
+  };
   rubby1.matrix = new Matrix4(yellowCoordinatesMat);
   rubby1.matrix.translate(0.09, 0.5, -0.06);
   neck.matrix.rotate(-g_yellowAngle, 0, 0, 1);
@@ -998,6 +1049,9 @@ function renderScene() {
   rubby1.render();
   // rubby 2
   var rubby2 = new Sphere();
+  if(g_normalOn) {
+    rubby2.textureNum = -3
+  };
   rubby2.color = [1,0,0,1];
   rubby2.matrix = new Matrix4(yellowCoordinatesMat);
   rubby2.matrix.translate(-0.09, 0.5, -0.06);
@@ -1013,6 +1067,9 @@ function renderScene() {
   var mid = new Sphere();
   mid.matrix = new Matrix4(catBaseMat);
   mid.color = [0, 0, 0, 0.93]; 
+  if(g_normalOn) {
+    mid.textureNum = -3
+  };
   if(!g_isWalking) {
     mid.matrix.translate(0, -0.32, -0.025);
     mid.matrix.rotate(-g_yellowAngle, -0.5, 0, 1);
@@ -1032,6 +1089,9 @@ function renderScene() {
   // Cat head
   var head = new Sphere();
   head.color = [0, 0, 0, 1]; 
+  if(g_normalOn) {
+    head.textureNum = -3
+  };
   head.matrix = new Matrix4(catBaseMat);
   head.matrix = yellowCoordinatesMat;
   head.matrix.translate(0, 0.65, 0);
@@ -1040,6 +1100,9 @@ function renderScene() {
   head.render();
   // snot and eyes
   var snout = new Sphere();
+  if(g_normalOn) {
+    snout.textureNum = -3
+  };
   snout.color = [0.1, 0.1, 0.1, 1];
   snout.matrix = new Matrix4(head.matrix);
   snout.matrix.translate(0, -0.2, -0.8); 
@@ -1048,6 +1111,9 @@ function renderScene() {
 
   // --- Nose ---
   var nose = new Cube();
+  if(g_normalOn) {
+    nose.textureNum = -3
+  };
   nose.color = [0.97, 0.76, 0.92, 1.0];
   nose.matrix = new Matrix4(snout.matrix);
   nose.matrix.translate(-0.2, 0.2, -1);
@@ -1057,6 +1123,9 @@ function renderScene() {
   // Eyes
   function drawCatEye(side) {
     var eye = new Sphere();
+    if(g_normalOn) {
+      eye.textureNum = -3
+    };
     eye.color = [1.0, 0.84, 0.0, 1.0];
     eye.matrix = new Matrix4(head.matrix);
     eye.matrix.translate(side * 0.4, 0.2, -0.8); 
@@ -1066,6 +1135,9 @@ function renderScene() {
     // Pupil
     var pupil = new Cube();
     pupil.color = [0, 0, 0, 1];
+    if(g_normalOn) {
+      pupil.textureNum = -3
+    };
     pupil.matrix = new Matrix4(eye.matrix);
     pupil.matrix.translate(-0.1, -0.5, -1);
     pupil.matrix.scale(0.4, 0.7, 0.1);
@@ -1077,6 +1149,9 @@ function renderScene() {
   // Ears
   var leftEar = new Cone();
   leftEar.color = [0.1, 0.1, 0.1, 1];
+  if(g_normalOn) {
+    leftEar.textureNum = -3
+  };
   leftEar.matrix = new Matrix4(head.matrix);
   leftEar.matrix.translate(-0.6, 0.5, 0);
   leftEar.matrix.rotate(20+g_ears, 0, 0, 1);
@@ -1085,6 +1160,9 @@ function renderScene() {
 
   var rightEar = new Cone();
   rightEar.color = [0.1, 0.1, 0.1, 1];
+  if(g_normalOn) {
+    rightEar.textureNum = -3
+  };
   rightEar.matrix = new Matrix4(head.matrix);
   rightEar.matrix.translate(0.6, 0.5, 0);
   rightEar.matrix.rotate(-20-g_ears, 0, 0, 1);
@@ -1094,6 +1172,9 @@ function renderScene() {
   // Ears-inner
   var innerLeftEar = new Cone();
   innerLeftEar.color = [0.97, 0.76, 0.92, 1.0];
+  if(g_normalOn) {
+    innerLeftEar.textureNum = -3
+  };
   innerLeftEar.matrix = new Matrix4(head.matrix);
   innerLeftEar.matrix.translate(-0.6, 0.5, -0.1);
   innerLeftEar.matrix.rotate(20+g_ears, 0, 0, 1);
@@ -1102,6 +1183,9 @@ function renderScene() {
 
   var innerRightrightEar = new Cone();
   innerRightrightEar.color = [0.97, 0.76, 0.92, 1.0];
+  if(g_normalOn) {
+    innerRightrightEar.textureNum = -3
+  };
   innerRightrightEar.matrix = new Matrix4(head.matrix);
   innerRightrightEar.matrix.translate(0.6, 0.5, -0.1);
   innerRightrightEar.matrix.rotate(-20-g_ears, 0, 0, 1);
@@ -1126,6 +1210,9 @@ function renderScene() {
     
     segment.matrix = new Matrix4(baseTailMatrix);
     var taper = 0.15 * (1 - (i / tailSegments) * 0.5);
+    if(g_normalOn) {
+      segment.textureNum = -3
+    };
     segment.matrix.scale(taper, taper, 0.3);
     segment.matrix.translate(-0.5, -0.5, 0);
 
