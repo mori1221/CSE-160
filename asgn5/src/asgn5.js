@@ -1,6 +1,9 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/loaders/GLTFLoader.js';
+import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 //Global variables
 let snowParticles;
@@ -65,6 +68,31 @@ function main() {
   point.position.set(0,10,0);
   scene.add(point);
 
+  // add a sun 
+  const sunGeometry = new THREE.SphereGeometry(2, 32, 32);
+  // bright yellow
+  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+  const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+  // place in the sky
+  sun.position.set(20, 20, -10);
+  scene.add(sun);
+  // add a directional light from the sun
+  const sunLight = new THREE.DirectionalLight(0xffffff, 1.5);
+  sunLight.position.set(20, 20, -10);
+  scene.add(sunLight);
+  // yellowish, strong, big radius glowing sun
+  const composer = new EffectComposer(renderer);
+  const renderScene = new RenderPass(scene, camera);
+  composer.addPass(renderScene);
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    1.5,  // strength: how intense the glow is
+    0.4,  // radius: spread of the bloom
+    0.85  // threshold: lower = more things glow
+  );
+  composer.addPass(bloomPass);
+  // const helper = new THREE.DirectionalLightHelper(sunLight, 5);
+  // scene.add(helper);
 
   // ice texture 
   const textureLoader = new THREE.TextureLoader();
@@ -97,11 +125,18 @@ function main() {
   /* Sphere -> to snow */
   const sphere = new THREE.Mesh(
     new THREE.SphereGeometry(1,32,32),
-    new THREE.MeshStandardMaterial({color:0x44aa88})
+    new THREE.MeshStandardMaterial({
+      color:0x44aa88,
+      roughness: 0.1,
+    })
   );
   sphere.position.set(-5,2,0);
   scene.add(sphere);
-  // once click, start snowing
+  // add point light
+  const sphereLight = new THREE.PointLight(0xffffff, 0.5, 5);
+  sphereLight.position.set(0,1.5,0);
+  sphere.add(sphereLight);
+  // once click, stardt snowing
   const snowGeometry = new THREE.BufferGeometry();
   const snowCount = 2000;
   const snowPositions = new Float32Array(snowCount * 3);
@@ -126,10 +161,14 @@ function main() {
   /* Cylinder -> Rain */
   const cylinder = new THREE.Mesh(
     new THREE.CylinderGeometry(1,1,3,32),
-    new THREE.MeshStandardMaterial({color:0xaa8844})
+    new THREE.MeshStandardMaterial({color:0xaa8844, roughness: 0.1})
   );
   cylinder.position.set(2,2,0);
   scene.add(cylinder);
+  // add point light
+  const cylinderLight = new THREE.PointLight(0xffffff, 0.5, 5);
+  cylinderLight.position.set(0,1.5,0);
+  cylinder.add(cylinderLight)
   // once click, start raining
   const rainGeometry = new THREE.BufferGeometry();
   // a lot of rain particles to make it look like it's raining hard
@@ -155,16 +194,25 @@ function main() {
   /* Square */
   const sqaure = new THREE.Mesh(
     new THREE.BoxGeometry(2,2,2),
-    new THREE.MeshStandardMaterial({color:0x8844aa})
+    new THREE.MeshStandardMaterial({color:0x8844aa, roughness: 0.1})
   );
-
   sqaure.position.set(5,2,0);
   scene.add(sqaure);
+  // add point light
+  const squareLight = new THREE.PointLight(0xffffff, 0.5, 5);
+  squareLight.position.set(0,1.5,0);
+  sqaure.add(squareLight);
   
 
   // focus on the clicking the sphere, cylinder, or square to change the weather
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
+  // change color to tell user the shape is cliked
+  const originalColors = {
+    sphere: sphere.material.color.clone(),
+    cylinder: cylinder.material.color.clone(),
+    sqaure: sqaure.material.color.clone()
+  };
   window.addEventListener("click",(event)=>{
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -172,6 +220,12 @@ function main() {
     const intersects = raycaster.intersectObjects([sphere,cylinder,sqaure]);
     if(intersects.length > 0){
       const obj = intersects[0].object;
+      // find all colors
+      sphere.material.color.copy(originalColors.sphere);
+      cylinder.material.color.copy(originalColors.cylinder);
+      sqaure.material.color.copy(originalColors.sqaure);
+      // change color to indicate it's clicked
+      obj.material.color.set(0xffff00);
       // occurs when click the sphere, start snowing
       if(obj === sphere){
         weather = "snow";
@@ -277,7 +331,8 @@ function main() {
     sphere.rotation.y += 0.02;
     cylinder.rotation.x += 0.04;
     sqaure.rotation.z += 0.01;
-    renderer.render(scene,camera);
+    composer.render();
+    // renderer.render(scene,camera);
   }
   // add the animation loop to the main
   animate();
